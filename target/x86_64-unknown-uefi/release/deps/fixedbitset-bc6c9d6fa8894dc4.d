@@ -1,0 +1,10 @@
+C:\Users\sherryfan\patina-apps\target\x86_64-unknown-uefi\release\deps\fixedbitset-bc6c9d6fa8894dc4.d: C:\Users\sherryfan\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fixedbitset-0.5.7\src\lib.rs C:\Users\sherryfan\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fixedbitset-0.5.7\src\block\mod.rs C:\Users\sherryfan\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fixedbitset-0.5.7\src\block\default.rs C:\Users\sherryfan\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fixedbitset-0.5.7\src\range.rs
+
+C:\Users\sherryfan\patina-apps\target\x86_64-unknown-uefi\release\deps\libfixedbitset-bc6c9d6fa8894dc4.rlib: C:\Users\sherryfan\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fixedbitset-0.5.7\src\lib.rs C:\Users\sherryfan\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fixedbitset-0.5.7\src\block\mod.rs C:\Users\sherryfan\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fixedbitset-0.5.7\src\block\default.rs C:\Users\sherryfan\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fixedbitset-0.5.7\src\range.rs
+
+C:\Users\sherryfan\patina-apps\target\x86_64-unknown-uefi\release\deps\libfixedbitset-bc6c9d6fa8894dc4.rmeta: C:\Users\sherryfan\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fixedbitset-0.5.7\src\lib.rs C:\Users\sherryfan\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fixedbitset-0.5.7\src\block\mod.rs C:\Users\sherryfan\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fixedbitset-0.5.7\src\block\default.rs C:\Users\sherryfan\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fixedbitset-0.5.7\src\range.rs
+
+C:\Users\sherryfan\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fixedbitset-0.5.7\src\lib.rs:
+C:\Users\sherryfan\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fixedbitset-0.5.7\src\block\mod.rs:
+C:\Users\sherryfan\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fixedbitset-0.5.7\src\block\default.rs:
+C:\Users\sherryfan\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fixedbitset-0.5.7\src\range.rs:

@@ -1,0 +1,38 @@
+[workspace]
+resolver = "2"
+
+members = ["services_benchmark_test"]
+
+[workspace.package]
+version = "0.2.0"
+edition = "2024"
+license = "Apache-2.0"
+rust-version = "1.85"
+description = "Patina helper applications"
+
+[workspace.dependencies]
+mu_pi = { version = "6" }
+mu_rust_helpers = { version = "3" }
+mu_uefi_boot_services = { version = "2" }
+
+patina = { version = "13"}
+
+cfg-if = "1.0.4"
+log = { version = "^0.4", default-features = false, features = [
+  "release_max_level_warn",
+] }
+r-efi = { version = "5.3.0", default-features = false }
+rolling-stats = "0.8.0"
+uuid = { version = "1.8", default-features = false }
+
+[profile.dev]
+opt-level = 3
+
+[profile.test]
+opt-level = 0
+
+[profile.release]
+opt-level = "s"
+codegen-units = 1
+lto = true
+incremental = true

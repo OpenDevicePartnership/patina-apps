@@ -1,0 +1,187 @@
+# Makefile.toml for building Patina EFI applications
+# This file uses cargo-make to build specific packages as EFI applications
+
+[config]
+default_to_workspace = false
+skip_core_tasks = true
+
+[env]
+# Default values
+CARGO_MAKE_RUST_TARGET_ARCH = { value = "x86_64", condition = { env_not_set = ["CARGO_MAKE_RUST_TARGET_ARCH"] } }
+PACKAGE_NAME = { value = "services_benchmark_test", condition = { env_not_set = ["PACKAGE_NAME"] } }
+BUILD_MODE = { value = "release", condition = { env_not_set = ["BUILD_MODE"] } }
+
+# Target configuration based on architecture  
+UEFI_TARGET_X64 = "x86_64-unknown-uefi"
+UEFI_TARGET_ARM64 = "aarch64-unknown-uefi"
+UEFI_TARGET = "x86_64-unknown-uefi"
+
+# Output paths
+TARGET_DIR = "target"
+EFI_DIR = "${TARGET_DIR}/${UEFI_TARGET}/${BUILD_MODE}"
+OUTPUT_DIR = "${TARGET_DIR}/efi"
+
+[tasks.default]
+alias = "build-efi"
+
+# Clean task
+[tasks.clean]
+description = "Clean build artifacts"
+command = "cargo"
+args = ["clean"]
+
+# Setup task
+[tasks.setup]
+description = "Setup toolchain and targets"
+script = '''
+@echo off
+echo Setting up Rust toolchain for UEFI development...
+rustup target add x86_64-unknown-uefi
+rustup target add aarch64-unknown-uefi
+'''
+
+# Build library
+[tasks.build-lib]
+description = "Build the library for UEFI target"
+command = "cargo"
+args = ["build", "--lib", "-p", "${PACKAGE_NAME}", "--target", "${UEFI_TARGET}", "--${BUILD_MODE}"]
+dependencies = ["setup"]
+
+# Build binary
+[tasks.build-bin]
+description = "Build the binary for UEFI target"
+command = "cargo"
+args = ["build", "--bin", "${PACKAGE_NAME}", "-p", "${PACKAGE_NAME}", "--target", "${UEFI_TARGET}", "--${BUILD_MODE}"]
+dependencies = ["setup"]
+
+# Create output directory
+[tasks.create-output-dir]
+description = "Create EFI output directory"
+command = "cmd"
+args = ["/c", "if not exist \"target\\efi\" mkdir \"target\\efi\""]
+
+# Copy EFI file
+[tasks.copy-efi]
+description = "Copy EFI executable to output directory"
+script = '''
+echo Copying EFI executable...
+copy "target\\${UEFI_TARGET}\\${BUILD_MODE}\\${PACKAGE_NAME}.efi" "target\\efi\\${PACKAGE_NAME}.efi"
+echo EFI application built: target\\efi\\${PACKAGE_NAME}.efi
+'''
+dependencies = ["create-output-dir"]
+
+# Build EFI application
+[tasks.build-efi]
+description = "Build EFI application for specified package"
+dependencies = ["build-bin", "copy-efi"]
+
+# Build specific package with custom name
+[tasks.build-package]
+description = "Build a specific package as EFI application"
+script = '''
+@echo off
+if "%PACKAGE%"=="" (
+    echo Error: PACKAGE environment variable must be set
+    echo Usage: cargo make build-package --env PACKAGE=package_name
+    exit /b 1
+)
+
+set PACKAGE_NAME=%PACKAGE%
+cargo make build-efi
+'''
+
+# Build for x86_64 architecture
+[tasks.build-x64]
+description = "Build EFI application for x86_64"
+env = { CARGO_MAKE_RUST_TARGET_ARCH = "x86_64", UEFI_TARGET = "x86_64-unknown-uefi" }
+run_task = "build-efi"
+
+# Build for aarch64 architecture  
+[tasks.build-arm64]
+description = "Build EFI application for aarch64"
+env = { CARGO_MAKE_RUST_TARGET_ARCH = "aarch64", UEFI_TARGET = "aarch64-unknown-uefi" }
+run_task = "build-efi"
+
+# Build for both architectures
+[tasks.build-all]
+description = "Build EFI application for all supported architectures"
+dependencies = ["build-x64", "build-arm64"]
+
+# Development build
+[tasks.build-debug]
+description = "Build EFI application in debug mode"
+env = { BUILD_MODE = "debug" }
+run_task = "build-efi"
+
+# Test task
+[tasks.test]
+description = "Run tests for the package"
+command = "cargo"
+args = ["test", "-p", "${PACKAGE_NAME}"]
+
+# Clippy linting
+[tasks.clippy]
+description = "Run clippy for the package"
+command = "cargo"
+args = ["clippy", "-p", "${PACKAGE_NAME}", "--target", "${UEFI_TARGET}", "--", "-D", "warnings"]
+dependencies = ["setup"]
+
+# Format code
+[tasks.fmt]
+description = "Format code"
+command = "cargo"
+args = ["fmt", "-p", "${PACKAGE_NAME}"]
+
+# Check code
+[tasks.check]
+description = "Check code for the package"
+command = "cargo"
+args = ["check", "-p", "${PACKAGE_NAME}", "--target", "${UEFI_TARGET}"]
+dependencies = ["setup"]
+
+# Full CI pipeline
+[tasks.ci]
+description = "Run full CI pipeline"
+dependencies = ["fmt", "clippy", "test", "build-efi"]
+
+# Show help
+[tasks.help]
+description = "Show available tasks and usage examples"
+script = '''
+echo "Patina EFI Application Build Tasks"
+echo "================================="
+echo ""
+echo "Basic Usage:"
+echo "  cargo make build-efi                    # Build default package (services_benchmark_test) as EFI"
+echo "  cargo make build-package --env PACKAGE=my_package  # Build specific package as EFI"
+echo ""
+echo "Architecture-specific builds:"
+echo "  cargo make build-x64                    # Build for x86_64"
+echo "  cargo make build-arm64                  # Build for aarch64"
+echo "  cargo make build-all                    # Build for all architectures"
+echo ""
+echo "Build modes:"
+echo "  cargo make build-efi                    # Release build (default)"
+echo "  cargo make build-debug                  # Debug build"
+echo ""
+echo "Development tasks:"
+echo "  cargo make test                         # Run tests"
+echo "  cargo make clippy                       # Run linting"
+echo "  cargo make fmt                          # Format code"
+echo "  cargo make check                        # Check code"
+echo "  cargo make ci                           # Run full CI pipeline"
+echo ""
+echo "Utility tasks:"
+echo "  cargo make clean                        # Clean build artifacts"
+echo "  cargo make setup                        # Setup toolchain and targets"
+echo ""
+echo "Environment Variables:"
+echo "  PACKAGE_NAME                           # Package to build (default: services_benchmark_test)"
+echo "  CARGO_MAKE_RUST_TARGET_ARCH            # Target architecture (x86_64 or aarch64)"
+echo "  BUILD_MODE                             # Build mode (release or debug)"
+echo ""
+echo "Examples:"
+echo "  cargo make build-package --env PACKAGE=my_efi_app"
+echo "  cargo make build-efi --env CARGO_MAKE_RUST_TARGET_ARCH=aarch64"
+echo "  cargo make build-efi --env BUILD_MODE=debug"
+'''

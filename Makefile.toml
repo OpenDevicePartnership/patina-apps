@@ -44,15 +44,34 @@ rustup target add aarch64-unknown-uefi
 [tasks.build-lib]
 description = "Build the library for UEFI target"
 command = "cargo"
-args = ["build", "--lib", "-p", "${PACKAGE_NAME}", "--target", "${UEFI_TARGET}", "--${BUILD_MODE}"]
+args = ["build", "--lib", "-p", "${PACKAGE_NAME}", "--target", "${UEFI_TARGET}"]
+dependencies = ["setup"]
+
+# Build library in release mode
+[tasks.build-lib-release]
+description = "Build the library for UEFI target in release mode"
+command = "cargo"
+args = ["build", "--lib", "-p", "${PACKAGE_NAME}", "--target", "${UEFI_TARGET}", "--release"]
 dependencies = ["setup"]
 
 # Build binary
 [tasks.build-bin]
 description = "Build the binary for UEFI target"
 command = "cargo"
-args = ["build", "--bin", "${PACKAGE_NAME}", "-p", "${PACKAGE_NAME}", "--target", "${UEFI_TARGET}", "--${BUILD_MODE}"]
+args = ["build", "--bin", "${PACKAGE_NAME}", "-p", "${PACKAGE_NAME}", "--target", "${UEFI_TARGET}"]
 dependencies = ["setup"]
+
+# Build binary in release mode
+[tasks.build-bin-release]
+description = "Build the binary for UEFI target in release mode"
+command = "cargo"
+args = ["build", "--bin", "${PACKAGE_NAME}", "-p", "${PACKAGE_NAME}", "--target", "${UEFI_TARGET}", "--release"]
+dependencies = ["setup"]
+
+# Build EFI application
+[tasks.build-efi]
+description = "Build EFI application for specified package (release mode)"
+dependencies = ["build-bin-release", "copy-efi-release"]
 
 # Create output directory
 [tasks.create-output-dir]
@@ -60,20 +79,25 @@ description = "Create EFI output directory"
 command = "cmd"
 args = ["/c", "if not exist \"target\\efi\" mkdir \"target\\efi\""]
 
-# Copy EFI file
-[tasks.copy-efi]
-description = "Copy EFI executable to output directory"
+# Copy EFI file (release)
+[tasks.copy-efi-release]
+description = "Copy release EFI executable to output directory"
 script = '''
 echo Copying EFI executable...
-copy "target\\${UEFI_TARGET}\\${BUILD_MODE}\\${PACKAGE_NAME}.efi" "target\\efi\\${PACKAGE_NAME}.efi"
-echo EFI application built: target\\efi\\${PACKAGE_NAME}.efi
+copy "target\\x86_64-unknown-uefi\\release\\services_benchmark_test.efi" "target\\efi\\services_benchmark_test.efi"
+echo EFI application built: target\\efi\\services_benchmark_test.efi
 '''
 dependencies = ["create-output-dir"]
 
-# Build EFI application
-[tasks.build-efi]
-description = "Build EFI application for specified package"
-dependencies = ["build-bin", "copy-efi"]
+# Copy EFI file (debug)
+[tasks.copy-efi-debug]
+description = "Copy debug EFI executable to output directory"
+script = '''
+echo Copying debug EFI executable...
+copy "target\\x86_64-unknown-uefi\\debug\\services_benchmark_test.efi" "target\\efi\\services_benchmark_test_debug.efi"
+echo Debug EFI application built: target\\efi\\services_benchmark_test_debug.efi
+'''
+dependencies = ["create-output-dir"]
 
 # Build specific package with custom name
 [tasks.build-package]
@@ -110,8 +134,7 @@ dependencies = ["build-x64", "build-arm64"]
 # Development build
 [tasks.build-debug]
 description = "Build EFI application in debug mode"
-env = { BUILD_MODE = "debug" }
-run_task = "build-efi"
+dependencies = ["build-bin", "copy-efi-debug"]
 
 # Test task
 [tasks.test]

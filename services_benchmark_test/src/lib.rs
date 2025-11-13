@@ -27,9 +27,10 @@ use alloc::string::ToString;
 use alloc::vec::Vec;
 use core::fmt::Write;
 use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};
+use rolling_stats::Stats;
 
 use patina::boot_services::StandardBootServices;
-use r_efi::{efi, system};
+use r_efi::efi;
 
 use crate::{error::BenchError, measure::BENCH_FNS};
 use alloc::string::String;
@@ -37,15 +38,61 @@ use alloc::string::String;
 /// Global instance of UEFI Boot Services.
 pub static BOOT_SERVICES: StandardBootServices = StandardBootServices::new_uninit();
 
-pub fn bench_start(handle: efi::Handle, st: *const system::SystemTable) -> Result<(), BenchError> {
+pub fn bench_start(handle: efi::Handle) -> Result<(), BenchError> {
     log::info!("Starting Services Benchmark Test...");
 
     let mut output_buf = String::new();
 
-    // Writes fixed-width markdown table.
+    log::info!("here1");
+    write_headers(&mut output_buf)?;
+
+    for (bf, num_calls) in BENCH_FNS {
+        // Run a few warmup iterations. (10% of the benchmark iterations).
+        (bf.func)(handle, num_calls / 10)?;
+
+        let (bench_name, bench_func) = (bf.name, bf.func);
+        let cycles_res = bench_func(handle, num_calls);
+        match cycles_res {
+            Ok(cycles_stats) => {
+                log::info!("running");
+                // Calculate total time in milliseconds. Formula: ms = cycles / (cycles / s) * 1000.
+                let total_time_ms =
+                    (cycles_stats.count as f64) / (Arch::perf_frequency() as f64) * 1000.0;
+                write_result_row(
+                    &mut output_buf,
+                    bench_name,
+                    cycles_stats,
+                    total_time_ms,
+                    num_calls,
+                )?;
+            }
+            Err(e) => {
+                log::error!("Benchmark {} failed: {:?}", bench_name, e);
+                debug_assert!(false);
+                // In case of failure write 0s and note failure.
+                write_result_row(
+                    &mut output_buf,
+                    (bench_name.to_string() + " (Failed)").as_str(),
+                    Stats::default(),
+                    0.0,
+                    0,
+                )?;
+            }
+        }
+    }
+
+    log::info!("{}", output_buf);
+    // SAFETY: `st` is a valid pointer to SystemTable provided by UEFI firmware in `efi_main`.
+    unsafe { print_to_console(&output_buf.as_str()) };
+
+    Ok(())
+}
+
+// Writes the header rows for the fixed-width results markdown table.
+pub fn write_headers(output_buf: &mut String) -> Result<(), BenchError> {
     // Column headers.
     writeln!(
-        &mut output_buf,
+        output_buf,
         "| {:<32} | {:>14} | {:>12} | {:>15} | {:>15} | {:>12} | {:>12} | {:>12} |",
         "Name",
         "Total cycles",
@@ -59,62 +106,34 @@ pub fn bench_start(handle: efi::Handle, st: *const system::SystemTable) -> Resul
     .map_err(|e| BenchError::WriteFailure("Write table header failed", e))?;
     // Column seperators.
     writeln!(
-        &mut output_buf,
+        output_buf,
         "| {:-<32} | {:-<14} | {:-<12} | {:-<15} | {:-<15} | {:-<12} | {:-<12} | {:-<12} |",
         "-", "-", "-", "-", "-", "-", "-", "-"
     )
     .map_err(|e| BenchError::WriteFailure("Write table header failed", e))?;
+    Ok(())
+}
 
-    for (bf, num_calls) in BENCH_FNS {
-        // Run a few warmup iterations. (10% of the benchmark iterations).
-        (bf.func)(handle, num_calls / 10)?;
-
-        let (bench_name, bench_func) = (bf.name, bf.func);
-        let cycles_res = bench_func(handle, num_calls);
-        match cycles_res {
-            Ok(cycles) => {
-                // Calculate total time in milliseconds. Formula: ms = cycles / (cycles / s) * 1000.
-                let total_time_ms =
-                    (cycles.count as f64) / (Arch::perf_frequency() as f64) * 1000.0;
-                writeln!(
-                    &mut output_buf,
-                    "| {:<32} | {:>14} | {:>12} | {:>15} | {:>15.3} | {:>12} | {:>12} | {:>12.2} |",
-                    bench_name,
-                    cycles.count as usize, // Format as usize for better readability. Partial cycles don't really matter.
-                    num_calls,
-                    cycles.mean,
-                    total_time_ms,
-                    cycles.min,
-                    cycles.max,
-                    cycles.std_dev as usize, // Format as usize for better readability. Partial cycles don't really matter.
-                )
-                .map_err(|e| BenchError::WriteFailure("Write table data failed", e))?;
-            }
-            Err(e) => {
-                log::info!("Benchmark {} failed: {:?}", bench_name, e);
-                debug_assert!(false);
-                // In case of failure write 0s and note failure.
-                writeln!(
-                    &mut output_buf,
-                    "| {:<32} | {:>14} | {:>12} | {:>15} | {:>15.3} | {:>12} | {:>12} | {:>12.2} |",
-                    bench_name.to_string() + " (Failed)",
-                    0,
-                    0,
-                    0,
-                    0.0,
-                    0,
-                    0,
-                    0
-                )
-                .map_err(|e| BenchError::WriteFailure("Write table header failed", e))?;
-            }
-        }
-    }
-
-    log::info!("{}", output_buf);
-    // SAFETY: `st` is a valid pointer to SystemTable provided by UEFI firmware in `efi_main`.
-    unsafe { print_to_console(&output_buf.as_str()) };
-
+pub fn write_result_row(
+    output_buf: &mut String,
+    bench_name: &str,
+    stats: Stats<f64>,
+    total_time_ms: f64,
+    num_calls: usize,
+) -> Result<(), BenchError> {
+    writeln!(
+        output_buf,
+        "| {:<32} | {:>14} | {:>12} | {:>15} | {:>15.3} | {:>12} | {:>12} | {:>12.2} |",
+        bench_name,
+        stats.count as usize, // Format as usize for better readability. Partial cycles don't really matter.
+        num_calls,
+        stats.mean,
+        total_time_ms,
+        stats.min,
+        stats.max,
+        stats.std_dev as usize, // Format as usize for better readability. Partial cycles don't really matter.
+    )
+    .map_err(|e| BenchError::WriteFailure("Write table header failed", e))?;
     Ok(())
 }
 

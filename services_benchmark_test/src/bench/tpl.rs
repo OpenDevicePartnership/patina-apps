@@ -1,3 +1,5 @@
+use core::usize;
+
 use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};
 use patina::boot_services::{BootServices as _, tpl::Tpl};
 use r_efi::efi::{self};
@@ -5,11 +7,14 @@ use rolling_stats::Stats;
 
 use crate::{BOOT_SERVICES, error::BenchError};
 
-pub(crate) fn bench_raise_tpl(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
+pub(crate) fn bench_raise_tpl(
+    _handle: efi::Handle,
+    num_calls: usize,
+) -> Result<Stats<f64>, BenchError> {
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
         let start = Arch::cpu_count();
-        let old_tpl = BOOT_SERVICES.raise_tpl(Tpl::NOTIFY);
+        let old_tpl = BOOT_SERVICES.raise_tpl(Tpl(usize::MAX));
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
 
@@ -19,10 +24,20 @@ pub(crate) fn bench_raise_tpl(_handle: efi::Handle, num_calls: usize) -> Result<
     Ok(stats)
 }
 
-pub(crate) fn bench_restore_tpl(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
+pub(crate) fn bench_restore_tpl(
+    _handle: efi::Handle,
+    num_calls: usize,
+) -> Result<Stats<f64>, BenchError> {
     let mut stats: Stats<f64> = Stats::new();
-    for _ in 0..num_calls {
-        let old_tpl = BOOT_SERVICES.raise_tpl(Tpl::NOTIFY);
+    let tpl_options = [
+        Tpl::APPLICATION,
+        Tpl::CALLBACK,
+        Tpl::NOTIFY,
+        Tpl(usize::MAX),
+    ];
+    for i in 0..num_calls {
+        // Rotate between different TPL levels to test all scenarios.
+        let old_tpl = BOOT_SERVICES.raise_tpl(tpl_options[i % tpl_options.len()]);
 
         let start = Arch::cpu_count();
         BOOT_SERVICES.restore_tpl(old_tpl);

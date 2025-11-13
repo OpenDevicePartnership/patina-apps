@@ -131,17 +131,7 @@ pub unsafe fn print_to_console(message: &str) {
         }
 
         // Convert the message to UTF-16 for UEFI console output.
-        let mut utf16_buffer = Vec::new();
-        for ch in message.chars() {
-            if ch as u32 <= 0xFFFF {
-                utf16_buffer.push(ch as u16);
-            } else {
-                // Handle surrogate pairs for characters > U+FFFF.
-                let code = ch as u32 - 0x10000;
-                utf16_buffer.push(0xD800 + ((code >> 10) as u16));
-                utf16_buffer.push(0xDC00 + ((code & 0x3FF) as u16));
-            }
-        }
+        let mut utf16_buffer: Vec<u16> = message.encode_utf16().collect();
         utf16_buffer.push(0); // Null terminator.
 
         // Call the UEFI console output function.

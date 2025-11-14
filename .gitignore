@@ -1,0 +1,6 @@
+*.profraw
+**/target
+Cargo.lock
+docs/book/
+docs/target/
+.vscode/launch.json

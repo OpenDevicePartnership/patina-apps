@@ -167,6 +167,13 @@ dependencies = ["setup"]
 description = "Run full CI pipeline"
 dependencies = ["fmt", "clippy", "test", "build-efi"]
 
+[tasks.deny]
+description = "Run cargo deny."
+install_crate = false
+clear = true
+command = "cargo"
+args = ["deny", "check"]
+
 # Show help
 [tasks.help]
 description = "Show available tasks and usage examples"

@@ -8,10 +8,7 @@ use rolling_stats::Stats;
 
 use crate::{BOOT_SERVICES, error::BenchError};
 
-pub(crate) fn bench_check_event_signalled(
-    _handle: efi::Handle,
-    num_calls: usize,
-) -> Result<Stats<f64>, BenchError> {
+pub(crate) fn bench_check_event_signalled(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     extern "efiapi" fn test_notify(_event: efi::Event, _context: *mut c_void) {}
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
@@ -29,9 +26,7 @@ pub(crate) fn bench_check_event_signalled(
             .map_err(|e| BenchError::BenchSetupFailure("Failed to signal event", e))?;
 
         let start = Arch::cpu_count();
-        BOOT_SERVICES
-            .check_event(event_handle)
-            .map_err(|e| BenchError::BenchFailure("check_event failed", e))?;
+        BOOT_SERVICES.check_event(event_handle).map_err(|e| BenchError::BenchFailure("check_event failed", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
 
@@ -42,10 +37,7 @@ pub(crate) fn bench_check_event_signalled(
     Ok(stats)
 }
 
-pub(crate) fn bench_check_event_unsignalled(
-    _handle: efi::Handle,
-    num_calls: usize,
-) -> Result<Stats<f64>, BenchError> {
+pub(crate) fn bench_check_event_unsignaled(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     extern "efiapi" fn test_notify(_event: efi::Event, _context: *mut c_void) {}
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
@@ -60,9 +52,7 @@ pub(crate) fn bench_check_event_unsignalled(
         .map_err(|e| BenchError::BenchSetupFailure("Failed to create event", e))?;
 
         let start = Arch::cpu_count();
-        BOOT_SERVICES
-            .check_event(event_handle)
-            .map_err(|e| BenchError::BenchFailure("check_event failed", e))?;
+        BOOT_SERVICES.check_event(event_handle).map_err(|e| BenchError::BenchFailure("check_event failed", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
 
@@ -73,10 +63,7 @@ pub(crate) fn bench_check_event_unsignalled(
     Ok(stats)
 }
 
-pub(crate) fn bench_create_event(
-    _handle: efi::Handle,
-    num_calls: usize,
-) -> Result<Stats<f64>, BenchError> {
+pub(crate) fn bench_create_event(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     extern "efiapi" fn test_notify(_event: efi::Event, _context: *mut c_void) {}
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
@@ -100,10 +87,7 @@ pub(crate) fn bench_create_event(
     Ok(stats)
 }
 
-pub(crate) fn bench_close_event(
-    _handle: efi::Handle,
-    num_calls: usize,
-) -> Result<Stats<f64>, BenchError> {
+pub(crate) fn bench_close_event(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     extern "efiapi" fn test_notify(_event: efi::Event, _context: *mut c_void) {}
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
@@ -117,19 +101,14 @@ pub(crate) fn bench_close_event(
         }
         .map_err(|e| BenchError::BenchSetupFailure("Failed to create event", e))?;
         let start = Arch::cpu_count();
-        BOOT_SERVICES
-            .close_event(event_handle)
-            .map_err(|e| BenchError::BenchFailure("Failed to close event", e))?;
+        BOOT_SERVICES.close_event(event_handle).map_err(|e| BenchError::BenchFailure("Failed to close event", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
     }
     Ok(stats)
 }
 
-pub(crate) fn bench_signal_event(
-    _handle: efi::Handle,
-    num_calls: usize,
-) -> Result<Stats<f64>, BenchError> {
+pub(crate) fn bench_signal_event(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     extern "efiapi" fn test_notify(_event: efi::Event, _context: *mut c_void) {}
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
@@ -141,12 +120,10 @@ pub(crate) fn bench_signal_event(
                 ptr::null_mut(),
             )
         }
-        .map_err(|e| BenchError::BenchSetupFailure("Failed to create evente", e))?;
+        .map_err(|e| BenchError::BenchSetupFailure("Failed to create event", e))?;
 
         let start = Arch::cpu_count();
-        BOOT_SERVICES
-            .signal_event(event_handle)
-            .map_err(|e| BenchError::BenchFailure("Failed to signal event", e))?;
+        BOOT_SERVICES.signal_event(event_handle).map_err(|e| BenchError::BenchFailure("Failed to signal event", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
 
@@ -157,24 +134,15 @@ pub(crate) fn bench_signal_event(
     Ok(stats)
 }
 
-pub(crate) fn bench_signal_event_group(
-    _handle: efi::Handle,
-    num_calls: usize,
-) -> Result<Stats<f64>, BenchError> {
+pub(crate) fn bench_signal_event_group(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     let mut stats: Stats<f64> = Stats::new();
 
     // No-op notify function. We want to measure only the signaling overhead.
     extern "efiapi" fn test_notify(_event: efi::Event, _context: *mut c_void) {}
 
     // Use a mock GUID to avoid signalling real event groups.
-    const BENCH_EVENT_GROUP: efi::Guid = efi::Guid::from_fields(
-        0x12345678,
-        0x9abc,
-        0xdef0,
-        0x12,
-        0x34,
-        &[0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0],
-    );
+    const BENCH_EVENT_GROUP: efi::Guid =
+        efi::Guid::from_fields(0x12345678, 0x9abc, 0xdef0, 0x12, 0x34, &[0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0]);
 
     // The event group will increase in size with each iteration to test the impact of group size on signaling time.
     let mut event_grp = Vec::with_capacity(num_calls);
@@ -193,9 +161,7 @@ pub(crate) fn bench_signal_event_group(
 
         let start = Arch::cpu_count();
         // Signals the most recently created event in the group.
-        BOOT_SERVICES
-            .signal_event(event_handle)
-            .map_err(|e| BenchError::BenchFailure("Failed to signal event", e))?;
+        BOOT_SERVICES.signal_event(event_handle).map_err(|e| BenchError::BenchFailure("Failed to signal event", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
     }

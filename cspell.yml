@@ -25,3 +25,8 @@ minWordLength: 5
 caseSensitive: false
 allowCompoundWords: true
 words:
+  - "sysreg"
+  - "mdbook"
+  - "Depex"
+  - "guids"
+  - "efiapi"

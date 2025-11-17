@@ -46,6 +46,7 @@ pub fn bench_start(handle: efi::Handle) -> Result<(), BenchError> {
     write_headers(&mut output_buf)?;
 
     for (bf, num_calls) in BENCH_FNS {
+        log::info!("bf name: {}", bf.name);
         // Run a few warmup iterations. (10% of the benchmark iterations).
         (bf.func)(handle, num_calls / 10)?;
 

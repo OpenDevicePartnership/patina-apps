@@ -34,9 +34,9 @@ pub(crate) struct BenchFnWrapper {
     pub(crate) name: &'static str,
 }
 
-pub static BENCH_FNS: [(BenchFnWrapper, usize); 30] = [
+pub static BENCH_FNS: [(BenchFnWrapper, usize); 29] = [
     /* CONTROLLER SERVICES */
-    (BenchFnWrapper { func: bench_connect_controller, name: "connect_controller" }, 100),
+    // (BenchFnWrapper { func: bench_connect_controller, name: "connect_controller" }, 100),
     /* EVENT SERVICES */
     (BenchFnWrapper { func: bench_check_event_signalled, name: "check_event" }, 10_000),
     (BenchFnWrapper { func: bench_check_event_unsignaled, name: "check_event" }, 10_000),

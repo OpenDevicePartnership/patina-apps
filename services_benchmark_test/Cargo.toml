@@ -7,6 +7,7 @@ name = "services_benchmark_test"
 version = "0.0.1"
 edition = "2024"
 authors = ["Microsoft"]
+license.workspace = true
 
 [lib]
 name = "services_benchmark_test"

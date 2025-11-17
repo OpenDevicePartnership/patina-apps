@@ -23,8 +23,7 @@
 #![cfg_attr(target_os = "uefi", no_std)]
 
 extern crate alloc;
-use alloc::string::ToString;
-use alloc::vec::Vec;
+use alloc::{string::ToString, vec::Vec};
 use core::fmt::Write;
 use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};
 use rolling_stats::Stats;
@@ -56,15 +55,8 @@ pub fn bench_start(handle: efi::Handle) -> Result<(), BenchError> {
             Ok(cycles_stats) => {
                 log::info!("running");
                 // Calculate total time in milliseconds. Formula: ms = cycles / (cycles / s) * 1000.
-                let total_time_ms =
-                    (cycles_stats.count as f64) / (Arch::perf_frequency() as f64) * 1000.0;
-                write_result_row(
-                    &mut output_buf,
-                    bench_name,
-                    cycles_stats,
-                    total_time_ms,
-                    num_calls,
-                )?;
+                let total_time_ms = (cycles_stats.count as f64) / (Arch::perf_frequency() as f64) * 1000.0;
+                write_result_row(&mut output_buf, bench_name, cycles_stats, total_time_ms, num_calls)?;
             }
             Err(e) => {
                 log::error!("Benchmark {} failed: {:?}", bench_name, e);
@@ -90,6 +82,7 @@ pub fn bench_start(handle: efi::Handle) -> Result<(), BenchError> {
 
 // Writes the header rows for the fixed-width results markdown table.
 pub fn write_headers(output_buf: &mut String) -> Result<(), BenchError> {
+    log::info!("Writing table headers");
     // Column headers.
     writeln!(
         output_buf,
@@ -104,6 +97,7 @@ pub fn write_headers(output_buf: &mut String) -> Result<(), BenchError> {
         "SD [cycles]"
     )
     .map_err(|e| BenchError::WriteFailure("Write table header failed", e))?;
+    log::info!("Writing table headers1");
     // Column seperators.
     writeln!(
         output_buf,
@@ -111,6 +105,7 @@ pub fn write_headers(output_buf: &mut String) -> Result<(), BenchError> {
         "-", "-", "-", "-", "-", "-", "-", "-"
     )
     .map_err(|e| BenchError::WriteFailure("Write table header failed", e))?;
+    log::info!("Writing table headers2");
     Ok(())
 }
 

@@ -15,7 +15,7 @@ rustup target add x86_64-unknown-uefi
 
 ```bash
 # Build all applications in release mode.
-cargo make build-all
+cargo make build
 
 # Build all applications in debug mode.
 cargo make build-debug

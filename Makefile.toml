@@ -129,7 +129,7 @@ env = { CARGO_MAKE_RUST_TARGET_ARCH = "aarch64", UEFI_TARGET = "aarch64-unknown-
 run_task = "build-efi"
 
 # Build for both architectures
-[tasks.build-all]
+[tasks.build]
 description = "Build EFI application for all supported architectures"
 dependencies = ["build-x64", "build-arm64"]
 

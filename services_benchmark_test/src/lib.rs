@@ -21,7 +21,6 @@
 //!
 //! SPDX-License-Identifier: BSD-2-Clause-Patent
 #![cfg_attr(target_os = "uefi", no_std)]
-#![cfg_attr(target_os = "uefi", no_main)]
 
 cfg_if::cfg_if! {
     // Below code is meant to be compiled as an EFI application. So it should be

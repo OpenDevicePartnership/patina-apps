@@ -48,7 +48,12 @@ pub(crate) fn bench_check_event_unsignaled(_handle: efi::Handle, num_calls: usiz
         .map_err(|e| BenchError::BenchSetup("Failed to create event", e))?;
 
         let start = Arch::cpu_count();
-        BOOT_SERVICES.check_event(event_handle).map_err(|e| BenchError::BenchTest("check_event failed", e))?;
+        if let Err(e) = BOOT_SERVICES.check_event(event_handle) {
+            // In this case a NOT_READY error is acceptable since the event is unsignaled.
+            if e != efi::Status::SUCCESS && e != efi::Status::NOT_READY {
+                return Err(BenchError::BenchTest("check_event returned unexpected status", e));
+            }
+        }
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
 

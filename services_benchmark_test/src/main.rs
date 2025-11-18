@@ -6,7 +6,6 @@
 //!
 //! SPDX-License-Identifier: Apache-2.0
 //!
-
 #![cfg_attr(target_os = "uefi", no_std)]
 #![cfg_attr(target_os = "uefi", no_main)]
 
@@ -15,21 +14,24 @@ cfg_if::cfg_if! {
         use core::panic::PanicInfo;
         use uefi::prelude::*;
         use services_benchmark_test::bench_start;
+        use r_efi::efi;
+        use services_benchmark_test::BOOT_SERVICES;
 
         #[entry]
         fn main() -> Status {
             uefi::helpers::init().unwrap();
             log::info!("UEFI Services Benchmark Test Entry Point");
 
-            let st =uefi::table::system_table_raw();
-                        if let Some(st_ptr) = st {
+            let st = uefi::table::system_table_raw();
+            if let Some(st_ptr) = st {
                 let st = st_ptr.as_ptr();
                 let system_table = unsafe { &*st };
-                let boot_services = &*(system_table.boot_services as *const efi::BootServices);
-                            BOOT_SERVICES.init(boot_services);
-                        }
+                // SAFETY: `uefi` crate ensures that the boot services pointer is valid after initialization.
+                let bs = unsafe { &*(system_table.boot_services as *const efi::BootServices) };
+                BOOT_SERVICES.init(bs);
+            }
 
-            // Convert UEFI types to r-efi compatible types
+            // Convert UEFI types to r-efi compatible types.
             let handle = uefi::boot::image_handle().as_ptr();
 
             bench_start(handle as r_efi::efi::Handle).unwrap_or_else(|e| {

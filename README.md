@@ -5,6 +5,7 @@ A collection of EFI applications built with Rust for Patina UEFI environments.
 ## Quick Start
 
 ### Prerequisites
+
 - Rust toolchain with `x86_64-unknown-uefi` target
 
 ```bash
@@ -31,4 +32,4 @@ Copy the `.efi` to the system's drive (using USB drive or other methods) and run
 
 ## Applications
 
-- **services_benchmark_test**: Benchmarks for core Patina service calls. Compares Rust timings to C. 
+- **services_benchmark_test**: Benchmarks for core Patina service calls. Compares Rust timings to C.

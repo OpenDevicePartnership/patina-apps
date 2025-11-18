@@ -367,7 +367,7 @@ The benchmarks measure cycle counts using CPU performance counters, providing:
 
 Results are displayed as a markdown table in the UEFI shell (one sample row shown below):
 
-```
+```plain-text
 | Name               | Total cycles | Total calls | Cycles/op | Total time (ms) | Min cycles | Max cycles | SD [cycles] |
 | ------------------ | ------------ | ----------- | --------- | --------------- | ---------- | ---------- | ----------- |
 | connect_controller | 1234567      | 100         | 12345.67  | 45.67           | 10000      | 15000      | 1500        |

@@ -31,6 +31,7 @@ jobs:
     with:
       build-tasks: build
       run-cargo-vet: false
+      run-tarpaulin: false
       additional-artifacts: |
         target/efi/services_benchmark_test_debug.efi
         target/efi/services_benchmark_test.efi

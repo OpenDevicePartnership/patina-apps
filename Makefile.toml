@@ -34,8 +34,6 @@ args = ["clean"]
 [tasks.setup]
 description = "Setup toolchain and targets"
 script = '''
-@echo off
-echo Setting up Rust toolchain for UEFI development...
 rustup target add x86_64-unknown-uefi
 rustup target add aarch64-unknown-uefi
 '''
@@ -83,9 +81,7 @@ args = ["/c", "if not exist \"target\\efi\" mkdir \"target\\efi\""]
 [tasks.copy-efi-release]
 description = "Copy release EFI executable to output directory"
 script = '''
-echo Copying EFI executable...
 copy "target\\x86_64-unknown-uefi\\release\\services_benchmark_test.efi" "target\\efi\\services_benchmark_test.efi"
-echo EFI application built: target\\efi\\services_benchmark_test.efi
 '''
 dependencies = ["create-output-dir"]
 
@@ -93,9 +89,7 @@ dependencies = ["create-output-dir"]
 [tasks.copy-efi-debug]
 description = "Copy debug EFI executable to output directory"
 script = '''
-echo Copying debug EFI executable...
 copy "target\\x86_64-unknown-uefi\\debug\\services_benchmark_test.efi" "target\\efi\\services_benchmark_test_debug.efi"
-echo Debug EFI application built: target\\efi\\services_benchmark_test_debug.efi
 '''
 dependencies = ["create-output-dir"]
 
@@ -103,13 +97,6 @@ dependencies = ["create-output-dir"]
 [tasks.build-package]
 description = "Build a specific package as EFI application"
 script = '''
-@echo off
-if "%PACKAGE%"=="" (
-    echo Error: PACKAGE environment variable must be set
-    echo Usage: cargo make build-package --env PACKAGE=package_name
-    exit /b 1
-)
-
 set PACKAGE_NAME=%PACKAGE%
 cargo make build-efi
 '''

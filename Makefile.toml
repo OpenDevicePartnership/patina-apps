@@ -187,3 +187,9 @@ args = [
     "--out",
     "Html",
 ]
+
+[tasks.doc]
+env = { RUSTDOCFLAGS = "-D warnings" }
+description = "Builds all rust documentation in the workspace. Example `cargo make doc`"
+command = "cargo"
+args = ["doc", "@@split(INDIVIDUAL_PACKAGE_TARGETS, )", "--open"]

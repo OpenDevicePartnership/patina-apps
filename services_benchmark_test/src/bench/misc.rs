@@ -12,9 +12,8 @@ pub(crate) fn bench_calculate_crc32(_handle: efi::Handle, num_calls: usize) -> R
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
         let start = Arch::cpu_count();
-        let _crc = BOOT_SERVICES
-            .calculate_crc_32(&data)
-            .map_err(|e| BenchError::BenchFailure("Failed to calculate CRC32", e))?;
+        let _crc =
+            BOOT_SERVICES.calculate_crc_32(&data).map_err(|e| BenchError::BenchTest("Failed to calculate CRC32", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
     }
@@ -32,7 +31,7 @@ pub(crate) fn bench_install_configuration_table(
         unsafe {
             BOOT_SERVICES
                 .install_configuration_table(&TEST_GUID1, &table as *const u64 as *mut c_void)
-                .map_err(|e| BenchError::BenchFailure("Failed to install configuration table", e))?;
+                .map_err(|e| BenchError::BenchTest("Failed to install configuration table", e))?;
         }
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);

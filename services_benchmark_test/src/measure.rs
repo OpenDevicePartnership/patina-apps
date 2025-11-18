@@ -5,7 +5,7 @@ use crate::{
     bench::{
         controller::bench_connect_controller,
         event::{
-            bench_check_event_signalled, bench_check_event_unsignaled, bench_close_event, bench_create_event,
+            bench_check_event_signaled, bench_check_event_unsignaled, bench_close_event, bench_create_event,
             bench_signal_event, bench_signal_event_group,
         },
         image::{bench_load_image, bench_start_image_and_exit},
@@ -34,12 +34,12 @@ pub(crate) struct BenchFnWrapper {
     pub(crate) name: &'static str,
 }
 
-pub static BENCH_FNS: [(BenchFnWrapper, usize); 29] = [
+pub static BENCH_FNS: [(BenchFnWrapper, usize); 30] = [
     /* CONTROLLER SERVICES */
-    // (BenchFnWrapper { func: bench_connect_controller, name: "connect_controller" }, 100),
+    (BenchFnWrapper { func: bench_connect_controller, name: "connect_controller" }, 100),
     /* EVENT SERVICES */
-    (BenchFnWrapper { func: bench_check_event_signalled, name: "check_event" }, 10_000),
-    (BenchFnWrapper { func: bench_check_event_unsignaled, name: "check_event" }, 10_000),
+    (BenchFnWrapper { func: bench_check_event_signaled, name: "bench_check_event_signaled" }, 10_000),
+    (BenchFnWrapper { func: bench_check_event_unsignaled, name: "bench_check_event_unsignaled" }, 10_000),
     (BenchFnWrapper { func: bench_create_event, name: "create_event" }, 1000),
     (BenchFnWrapper { func: bench_close_event, name: "close_event" }, 1000),
     (BenchFnWrapper { func: bench_signal_event, name: "signal_event" }, 100_000),

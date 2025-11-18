@@ -14,11 +14,11 @@ pub(crate) fn bench_allocate_pages(_handle: efi::Handle, num_calls: usize) -> Re
         let start = Arch::cpu_count();
         let pages = BOOT_SERVICES
             .allocate_pages(boot_services::allocation::AllocType::AnyPage, MemoryType::ACPI_MEMORY_NVS, 1)
-            .map_err(|e| BenchError::BenchFailure("Failed to allocate pages", e))?;
+            .map_err(|e| BenchError::BenchTest("Failed to allocate pages", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
 
-        BOOT_SERVICES.free_pages(pages, 1).map_err(|e| BenchError::BenchCleanupFailure("Failed to free pages", e))?;
+        BOOT_SERVICES.free_pages(pages, 1).map_err(|e| BenchError::BenchCleanup("Failed to free pages", e))?;
     }
     Ok(stats)
 }
@@ -29,11 +29,11 @@ pub(crate) fn bench_allocate_pool(_handle: efi::Handle, num_calls: usize) -> Res
         let start = Arch::cpu_count();
         let pool = BOOT_SERVICES
             .allocate_pool(MemoryType::ACPI_MEMORY_NVS, UEFI_PAGE_SIZE / 4)
-            .map_err(|e| BenchError::BenchFailure("Failed to allocate pool", e))?;
+            .map_err(|e| BenchError::BenchTest("Failed to allocate pool", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
 
-        BOOT_SERVICES.free_pool(pool).map_err(|e| BenchError::BenchCleanupFailure("Failed to free pool", e))?;
+        BOOT_SERVICES.free_pool(pool).map_err(|e| BenchError::BenchCleanup("Failed to free pool", e))?;
     }
     Ok(stats)
 }
@@ -43,10 +43,10 @@ pub(crate) fn bench_free_pages(_handle: efi::Handle, num_calls: usize) -> Result
     for _ in 0..num_calls {
         let pages = BOOT_SERVICES
             .allocate_pages(boot_services::allocation::AllocType::AnyPage, MemoryType::ACPI_MEMORY_NVS, 1)
-            .map_err(|e| BenchError::BenchSetupFailure("Failed to allocate pages", e))?;
+            .map_err(|e| BenchError::BenchSetup("Failed to allocate pages", e))?;
 
         let start = Arch::cpu_count();
-        BOOT_SERVICES.free_pages(pages, 1).map_err(|e| BenchError::BenchFailure("Failed to free pages", e))?;
+        BOOT_SERVICES.free_pages(pages, 1).map_err(|e| BenchError::BenchTest("Failed to free pages", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
     }
@@ -58,10 +58,10 @@ pub(crate) fn bench_free_pool(_handle: efi::Handle, num_calls: usize) -> Result<
     for _ in 0..num_calls {
         let pool = BOOT_SERVICES
             .allocate_pool(MemoryType::ACPI_MEMORY_NVS, UEFI_PAGE_SIZE / 4)
-            .map_err(|e| BenchError::BenchSetupFailure("Failed to allocate pool", e))?;
+            .map_err(|e| BenchError::BenchSetup("Failed to allocate pool", e))?;
 
         let start = Arch::cpu_count();
-        BOOT_SERVICES.free_pool(pool).map_err(|e| BenchError::BenchFailure("Failed to free pool", e))?;
+        BOOT_SERVICES.free_pool(pool).map_err(|e| BenchError::BenchTest("Failed to free pool", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
     }
@@ -97,7 +97,7 @@ pub(crate) fn bench_get_memory_map(_handle: efi::Handle, num_calls: usize) -> Re
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
         let start = Arch::cpu_count();
-        BOOT_SERVICES.get_memory_map().map_err(|e| BenchError::BenchFailure("Failed to get memory map", e.0))?;
+        BOOT_SERVICES.get_memory_map().map_err(|e| BenchError::BenchTest("Failed to get memory map", e.0))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
     }

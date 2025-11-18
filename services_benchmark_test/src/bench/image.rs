@@ -16,12 +16,12 @@ pub(crate) fn bench_start_image_and_exit(
         let image_bytes = include_bytes!("../../resources/NoopImage.efi");
         let loaded_image_handle = BOOT_SERVICES
             .load_image(false, parent_handle, core::ptr::null_mut(), Some(image_bytes))
-            .map_err(|e| BenchError::BenchSetupFailure("Failed to load image", e))?;
+            .map_err(|e| BenchError::BenchSetup("Failed to load image", e))?;
 
         let start = Arch::cpu_count();
         BOOT_SERVICES
             .start_image(loaded_image_handle)
-            .map_err(|e| BenchError::BenchFailure("Failed to start image", e.0))?;
+            .map_err(|e| BenchError::BenchTest("Failed to start image", e.0))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
     }
@@ -35,7 +35,7 @@ pub(crate) fn bench_load_image(parent_handle: efi::Handle, num_calls: usize) -> 
         let start = Arch::cpu_count();
         let _loaded_image_handle = BOOT_SERVICES
             .load_image(false, parent_handle, core::ptr::null_mut(), Some(image_bytes))
-            .map_err(|e| BenchError::BenchFailure("Failed to load image", e))?;
+            .map_err(|e| BenchError::BenchTest("Failed to load image", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
     }

@@ -8,7 +8,7 @@ use rolling_stats::Stats;
 
 use crate::{BOOT_SERVICES, error::BenchError};
 
-pub(crate) fn bench_check_event_signalled(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
+pub(crate) fn bench_check_event_signaled(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     extern "efiapi" fn test_notify(_event: efi::Event, _context: *mut c_void) {}
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
@@ -20,19 +20,15 @@ pub(crate) fn bench_check_event_signalled(_handle: efi::Handle, num_calls: usize
                 ptr::null_mut(),
             )
         }
-        .map_err(|e| BenchError::BenchSetupFailure("Failed to create event", e))?;
-        BOOT_SERVICES
-            .signal_event(event_handle)
-            .map_err(|e| BenchError::BenchSetupFailure("Failed to signal event", e))?;
+        .map_err(|e| BenchError::BenchSetup("Failed to create event", e))?;
+        BOOT_SERVICES.signal_event(event_handle).map_err(|e| BenchError::BenchSetup("Failed to signal event", e))?;
 
         let start = Arch::cpu_count();
-        BOOT_SERVICES.check_event(event_handle).map_err(|e| BenchError::BenchFailure("check_event failed", e))?;
+        BOOT_SERVICES.check_event(event_handle).map_err(|e| BenchError::BenchTest("check_event failed", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
 
-        BOOT_SERVICES
-            .close_event(event_handle)
-            .map_err(|e| BenchError::BenchCleanupFailure("Failed to close event", e))?;
+        BOOT_SERVICES.close_event(event_handle).map_err(|e| BenchError::BenchCleanup("Failed to close event", e))?;
     }
     Ok(stats)
 }
@@ -49,16 +45,14 @@ pub(crate) fn bench_check_event_unsignaled(_handle: efi::Handle, num_calls: usiz
                 ptr::null_mut(),
             )
         }
-        .map_err(|e| BenchError::BenchSetupFailure("Failed to create event", e))?;
+        .map_err(|e| BenchError::BenchSetup("Failed to create event", e))?;
 
         let start = Arch::cpu_count();
-        BOOT_SERVICES.check_event(event_handle).map_err(|e| BenchError::BenchFailure("check_event failed", e))?;
+        BOOT_SERVICES.check_event(event_handle).map_err(|e| BenchError::BenchTest("check_event failed", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
 
-        BOOT_SERVICES
-            .close_event(event_handle)
-            .map_err(|e| BenchError::BenchCleanupFailure("Failed to close event", e))?;
+        BOOT_SERVICES.close_event(event_handle).map_err(|e| BenchError::BenchCleanup("Failed to close event", e))?;
     }
     Ok(stats)
 }
@@ -76,13 +70,11 @@ pub(crate) fn bench_create_event(_handle: efi::Handle, num_calls: usize) -> Resu
                 ptr::null_mut(),
             )
         }
-        .map_err(|e| BenchError::BenchFailure("Failed to create event", e))?;
+        .map_err(|e| BenchError::BenchTest("Failed to create event", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
 
-        BOOT_SERVICES
-            .close_event(event_handle)
-            .map_err(|e| BenchError::BenchCleanupFailure("Failed to close event", e))?;
+        BOOT_SERVICES.close_event(event_handle).map_err(|e| BenchError::BenchCleanup("Failed to close event", e))?;
     }
     Ok(stats)
 }
@@ -99,9 +91,9 @@ pub(crate) fn bench_close_event(_handle: efi::Handle, num_calls: usize) -> Resul
                 ptr::null_mut(),
             )
         }
-        .map_err(|e| BenchError::BenchSetupFailure("Failed to create event", e))?;
+        .map_err(|e| BenchError::BenchSetup("Failed to create event", e))?;
         let start = Arch::cpu_count();
-        BOOT_SERVICES.close_event(event_handle).map_err(|e| BenchError::BenchFailure("Failed to close event", e))?;
+        BOOT_SERVICES.close_event(event_handle).map_err(|e| BenchError::BenchTest("Failed to close event", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
     }
@@ -120,16 +112,14 @@ pub(crate) fn bench_signal_event(_handle: efi::Handle, num_calls: usize) -> Resu
                 ptr::null_mut(),
             )
         }
-        .map_err(|e| BenchError::BenchSetupFailure("Failed to create event", e))?;
+        .map_err(|e| BenchError::BenchSetup("Failed to create event", e))?;
 
         let start = Arch::cpu_count();
-        BOOT_SERVICES.signal_event(event_handle).map_err(|e| BenchError::BenchFailure("Failed to signal event", e))?;
+        BOOT_SERVICES.signal_event(event_handle).map_err(|e| BenchError::BenchTest("Failed to signal event", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
 
-        BOOT_SERVICES
-            .close_event(event_handle)
-            .map_err(|e| BenchError::BenchCleanupFailure("Failed to close event", e))?;
+        BOOT_SERVICES.close_event(event_handle).map_err(|e| BenchError::BenchCleanup("Failed to close event", e))?;
     }
     Ok(stats)
 }
@@ -156,21 +146,19 @@ pub(crate) fn bench_signal_event_group(_handle: efi::Handle, num_calls: usize) -
                 &BENCH_EVENT_GROUP,
             )
         }
-        .map_err(|e| BenchError::BenchSetupFailure("Failed to create event", e))?;
+        .map_err(|e| BenchError::BenchSetup("Failed to create event", e))?;
         event_grp.push(event_handle);
 
         let start = Arch::cpu_count();
         // Signals the most recently created event in the group.
-        BOOT_SERVICES.signal_event(event_handle).map_err(|e| BenchError::BenchFailure("Failed to signal event", e))?;
+        BOOT_SERVICES.signal_event(event_handle).map_err(|e| BenchError::BenchTest("Failed to signal event", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
     }
 
     // Clean up all created events.
     for event_handle in event_grp {
-        BOOT_SERVICES
-            .close_event(event_handle)
-            .map_err(|e| BenchError::BenchCleanupFailure("Failed to close event", e))?;
+        BOOT_SERVICES.close_event(event_handle).map_err(|e| BenchError::BenchCleanup("Failed to close event", e))?;
     }
 
     Ok(stats)

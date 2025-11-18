@@ -4,21 +4,21 @@ use r_efi::efi;
 
 #[derive(Debug)]
 pub enum BenchError {
-    BenchSetupFailure(&'static str, efi::Status),
-    BenchFailure(&'static str, efi::Status),
-    BenchCleanupFailure(&'static str, efi::Status),
-    WriteFailure(&'static str, core::fmt::Error),
+    BenchSetup(&'static str, efi::Status),
+    BenchTest(&'static str, efi::Status),
+    BenchCleanup(&'static str, efi::Status),
+    WriteOutput(&'static str, core::fmt::Error),
 }
 
 impl fmt::Display for BenchError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            BenchError::BenchSetupFailure(msg, status)
-            | BenchError::BenchFailure(msg, status)
-            | BenchError::BenchCleanupFailure(msg, status) => {
+            BenchError::BenchSetup(msg, status)
+            | BenchError::BenchTest(msg, status)
+            | BenchError::BenchCleanup(msg, status) => {
                 write!(f, "{} with error {:?}", msg, status)
             }
-            BenchError::WriteFailure(msg, err) => {
+            BenchError::WriteOutput(msg, err) => {
                 write!(f, "{} with formatting error {:?}", msg, err)
             }
         }

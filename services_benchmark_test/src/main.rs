@@ -22,7 +22,7 @@ cfg_if::cfg_if! {
             log::info!("UEFI Services Benchmark Test Entry Point");
 
             // Convert UEFI types to r-efi compatible types
-            let handle = uefi::boot::image_handle().as_ptr() as *mut core::ffi::c_void;
+            let handle = uefi::boot::image_handle().as_ptr();
 
             bench_start(handle as r_efi::efi::Handle).unwrap_or_else(|e| {
                 log::error!("Services Benchmark Test failed: {:?}", e);

@@ -76,7 +76,7 @@ pub fn bench_start(handle: efi::Handle) -> Result<(), BenchError> {
 
     log::info!("{}", output_buf);
     // SAFETY: `st` is a valid pointer to SystemTable provided by UEFI firmware in `efi_main`.
-    unsafe { print_to_console(&output_buf.as_str()) };
+    unsafe { print_to_console(output_buf.as_str()) };
 
     Ok(())
 }
@@ -97,7 +97,7 @@ pub fn write_headers(output_buf: &mut String) -> Result<(), BenchError> {
         "Max cycles",
         "SD [cycles]"
     )
-    .map_err(|e| BenchError::WriteFailure("Write table header failed", e))?;
+    .map_err(|e| BenchError::WriteOutput("Write table header failed", e))?;
     log::info!("Writing table headers1");
     // Column seperators.
     writeln!(
@@ -105,7 +105,7 @@ pub fn write_headers(output_buf: &mut String) -> Result<(), BenchError> {
         "| {:-<32} | {:-<14} | {:-<12} | {:-<15} | {:-<15} | {:-<12} | {:-<12} | {:-<12} |",
         "-", "-", "-", "-", "-", "-", "-", "-"
     )
-    .map_err(|e| BenchError::WriteFailure("Write table header failed", e))?;
+    .map_err(|e| BenchError::WriteOutput("Write table header failed", e))?;
     log::info!("Writing table headers2");
     Ok(())
 }
@@ -121,7 +121,7 @@ pub fn write_result_row(
         output_buf,
         "| {:<32} | {:>14} | {:>12} | {:>15} | {:>15.3} | {:>12} | {:>12} | {:>12.2} |",
         bench_name,
-        stats.count as usize, // Format as usize for better readability. Partial cycles don't really matter.
+        stats.count, // Format as usize for better readability. Partial cycles don't really matter.
         num_calls,
         stats.mean,
         total_time_ms,
@@ -129,11 +129,14 @@ pub fn write_result_row(
         stats.max,
         stats.std_dev as usize, // Format as usize for better readability. Partial cycles don't really matter.
     )
-    .map_err(|e| BenchError::WriteFailure("Write table header failed", e))?;
+    .map_err(|e| BenchError::WriteOutput("Write table header failed", e))?;
     Ok(())
 }
 
 /// Print a message to the UEFI console output.
+///
+/// # Safety
+/// The caller must ensure that the UEFI System Table pointer has been initialized.
 pub unsafe fn print_to_console(message: &str) {
     let st = uefi::table::system_table_raw();
     if let Some(st_ptr) = st {

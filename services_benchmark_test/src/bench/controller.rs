@@ -39,7 +39,7 @@ pub(crate) fn bench_connect_controller(_handle: efi::Handle, num_calls: usize) -
     let controller_handle = unsafe {
         BOOT_SERVICES
             .install_protocol_interface_unchecked(None, &TEST_GUID1, 0x1111 as *mut core::ffi::c_void)
-            .map_err(|e| BenchError::BenchSetupFailure("Failed to install protocol interface for controller", e))
+            .map_err(|e| BenchError::BenchSetup("Failed to install protocol interface for controller", e))
     }?;
     let driver_handle = unsafe {
         BOOT_SERVICES
@@ -48,7 +48,7 @@ pub(crate) fn bench_connect_controller(_handle: efi::Handle, num_calls: usize) -
                 &efi::protocols::device_path::PROTOCOL_GUID,
                 0x2222 as *mut core::ffi::c_void,
             )
-            .map_err(|e| BenchError::BenchSetupFailure("Failed to install protocol interface for driver", e))
+            .map_err(|e| BenchError::BenchSetup("Failed to install protocol interface for driver", e))
     }?;
 
     let image_handle = unsafe {
@@ -58,7 +58,7 @@ pub(crate) fn bench_connect_controller(_handle: efi::Handle, num_calls: usize) -
             core::ptr::null_mut(), // Dummy protocol data for test
         )
     }
-    .map_err(|e| BenchError::BenchSetupFailure("Failed to install protocol interface for image", e))?;
+    .map_err(|e| BenchError::BenchSetup("Failed to install protocol interface for image", e))?;
     let binding = Box::new(efi::protocols::driver_binding::Protocol {
         version: 10,
         supported: mock_supported,
@@ -76,7 +76,7 @@ pub(crate) fn bench_connect_controller(_handle: efi::Handle, num_calls: usize) -
                 &efi::protocols::driver_binding::PROTOCOL_GUID,
                 binding_ptr,
             )
-            .map_err(|e| BenchError::BenchSetupFailure("Failed to install protocol interface for driver binding", e))?;
+            .map_err(|e| BenchError::BenchSetup("Failed to install protocol interface for driver binding", e))?;
     }
 
     let mut stats: Stats<f64> = Stats::new();
@@ -85,14 +85,14 @@ pub(crate) fn bench_connect_controller(_handle: efi::Handle, num_calls: usize) -
         unsafe {
             BOOT_SERVICES
                 .connect_controller(controller_handle, vec![driver_handle], core::ptr::null_mut(), false)
-                .map_err(|e| BenchError::BenchFailure("Failed to connect controller", e))?;
+                .map_err(|e| BenchError::BenchTest("Failed to connect controller", e))?;
         }
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
         stats.update((end - start) as f64);
         BOOT_SERVICES
             .disconnect_controller(controller_handle, None, None)
-            .map_err(|e| BenchError::BenchCleanupFailure("Failed to disconnect controller", e))?;
+            .map_err(|e| BenchError::BenchCleanup("Failed to disconnect controller", e))?;
     }
 
     // Uninstall protocols to prevent side effects.
@@ -103,7 +103,7 @@ pub(crate) fn bench_connect_controller(_handle: efi::Handle, num_calls: usize) -
                 &efi::protocols::device_path::PROTOCOL_GUID,
                 0x2222 as *mut core::ffi::c_void,
             )
-            .map_err(|e| BenchError::BenchCleanupFailure("Failed to uninstall protocol interface", e))?
+            .map_err(|e| BenchError::BenchCleanup("Failed to uninstall protocol interface", e))?
     };
 
     Ok(stats)

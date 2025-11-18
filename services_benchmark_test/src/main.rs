@@ -21,6 +21,14 @@ cfg_if::cfg_if! {
             uefi::helpers::init().unwrap();
             log::info!("UEFI Services Benchmark Test Entry Point");
 
+            let st =uefi::table::system_table_raw();
+                        if let Some(st_ptr) = st {
+                let st = st_ptr.as_ptr();
+                let system_table = unsafe { &*st };
+                let boot_services = &*(system_table.boot_services as *const efi::BootServices);
+                            BOOT_SERVICES.init(boot_services);
+                        }
+
             // Convert UEFI types to r-efi compatible types
             let handle = uefi::boot::image_handle().as_ptr();
 

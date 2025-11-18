@@ -21,7 +21,6 @@ path = "src/main.rs"
 mu_rust_helpers = { workspace = true }
 
 cfg-if = { workspace = true }
-linked_list_allocator = "0.10.5"
 log = { workspace = true }
 r-efi = { workspace = true }
 rolling-stats =  { workspace = true }

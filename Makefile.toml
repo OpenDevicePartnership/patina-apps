@@ -33,10 +33,10 @@ args = ["clean"]
 # Setup task
 [tasks.setup]
 description = "Setup toolchain and targets"
-script = '''
-rustup target add x86_64-unknown-uefi
-rustup target add aarch64-unknown-uefi
-'''
+script = [
+    "rustup target add x86_64-unknown-uefi",
+    "rustup target add aarch64-unknown-uefi"
+]
 
 # Build library
 [tasks.build-lib]
@@ -74,31 +74,46 @@ dependencies = ["build-bin-release", "copy-efi-release"]
 # Create output directory
 [tasks.create-output-dir]
 description = "Create EFI output directory"
-command = "cmd"
-args = ["/c", "if not exist \"target\\efi\" mkdir \"target\\efi\""]
+script_runner = "@duckscript"
+script = '''
+mkdir ${TARGET_DIR}/efi
+'''
 
 # Copy EFI file (release)
 [tasks.copy-efi-release]
 description = "Copy release EFI executable to output directory"
+script_runner = "@duckscript"
 script = '''
-copy "target\\x86_64-unknown-uefi\\release\\services_benchmark_test.efi" "target\\efi\\services_benchmark_test.efi"
+echo "Copying release EFI executable..."
+cp target/${UEFI_TARGET}/release/${PACKAGE_NAME}.efi target/efi/${PACKAGE_NAME}.efi
+echo "EFI application built: target/efi/${PACKAGE_NAME}.efi"
 '''
 dependencies = ["create-output-dir"]
 
 # Copy EFI file (debug)
 [tasks.copy-efi-debug]
 description = "Copy debug EFI executable to output directory"
+script_runner = "@duckscript"
 script = '''
-copy "target\\x86_64-unknown-uefi\\debug\\services_benchmark_test.efi" "target\\efi\\services_benchmark_test_debug.efi"
+echo "Copying debug EFI executable..."
+cp target/${UEFI_TARGET}/debug/${PACKAGE_NAME}.efi target/efi/${PACKAGE_NAME}_debug.efi
+echo "Debug EFI application built: target/efi/${PACKAGE_NAME}_debug.efi"
 '''
 dependencies = ["create-output-dir"]
 
 # Build specific package with custom name
 [tasks.build-package]
 description = "Build a specific package as EFI application"
+script_runner = "@duckscript"
 script = '''
-set PACKAGE_NAME=%PACKAGE%
-cargo make build-efi
+if is_empty ${PACKAGE}
+    echo "Error: PACKAGE environment variable must be set"
+    echo "Usage: cargo make build-package --env PACKAGE=package_name"
+    exit 1
+end
+
+set_env PACKAGE_NAME ${PACKAGE}
+cm_run_task build-efi
 '''
 
 # Build for x86_64 architecture
@@ -160,3 +175,15 @@ install_crate = false
 clear = true
 command = "cargo"
 args = ["deny", "check"]
+
+[tasks.coverage]
+description = "Build and run all tests and calculate coverage."
+clear = true
+command = "cargo"
+args = [
+    "tarpaulin",
+    "--output-dir",
+    "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/target",
+    "--out",
+    "Html",
+]

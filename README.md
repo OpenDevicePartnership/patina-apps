@@ -1,0 +1,34 @@
+# Patina Apps
+
+A collection of EFI applications built with Rust for Patina UEFI environments.
+
+## Quick Start
+
+### Prerequisites
+- Rust toolchain with `x86_64-unknown-uefi` target
+
+```bash
+rustup target add x86_64-unknown-uefi
+```
+
+### Build
+
+```bash
+# Build all applications in release mode.
+cargo make build-all
+
+# Build all applications in debug mode.
+cargo make build-debug
+
+# Build specific app.
+cargo make build-package --env PACKAGE=<app-name>
+```
+
+### Running
+
+Applications will be built into `target/efi/<app-name>.efi`.
+Copy the `.efi` to the system's drive (using USB drive or other methods) and run inside the UEFI shell.
+
+## Applications
+
+- **services_benchmark_test**: Benchmarks for core Patina service calls. Compares Rust timings to C. 

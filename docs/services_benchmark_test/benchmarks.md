@@ -39,7 +39,7 @@ in UEFI systems.
 
 **File**: `bench/event.rs`
 
-Benchmarks checking the state of an already-signaled event. This is the fast path of `check_event`. 
+Benchmarks checking the state of an already-signaled event. This is the fast path of `check_event`.
 
 #### `bench_check_event_unsignaled` (10000 iterations)
 
@@ -81,14 +81,14 @@ so this benchmark gradually increases the number of events by 1 per iteration.
 **File**: `bench/image.rs`
 
 Benchmarks UEFI image execution performance through a no-op image that exits immediately.
-This does not benchmark an individual function as it is difficult to measure `start_image` and `exit` indpendently. 
+This does not benchmark an individual function as it is difficult to measure `start_image` and `exit` indpendently.
 Instead, this benchmark roughly measures the performance of a complete image execution lifecycle.
 
 #### `load_image` (100 iterations)
 
 **File**: `bench/image.rs`
 
-Benchmarks UEFI image loading performance. 
+Benchmarks UEFI image loading performance.
 
 ### 4. Memory Services
 
@@ -114,7 +114,8 @@ Benchmarks page deallocation performance.
 
 **File**: `bench/memory.rs`
 
-Benchmarks pool memory deallocation. Like `allocate_pool`, this represents smaller, more frequent memory allocations in the core.
+Benchmarks pool memory deallocation.
+Like `allocate_pool`, this represents smaller, more frequent memory allocations in the core.
 
 #### `copy_mem` (10 iterations)
 
@@ -184,7 +185,7 @@ Benchmarks device path resolution.
 
 **File**: `bench/protocol.rs`
 
-Benchmarks protocol metadata retrieval. 
+Benchmarks protocol metadata retrieval.
 
 #### `protocols_per_handle` (100 iterations)
 

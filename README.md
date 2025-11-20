@@ -6,10 +6,10 @@ A collection of EFI applications built with Rust for Patina UEFI environments.
 
 ### Prerequisites
 
-- Rust toolchain with `x86_64-unknown-uefi` target
+- Rust toolchain with the appropriate UEFI target (based on VM/hardware)
 
 ```bash
-rustup target add x86_64-unknown-uefi
+rustup target add [x86_64|aarch64|i686]-unknown-uefi
 ```
 
 ### Build

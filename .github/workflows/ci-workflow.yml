@@ -35,3 +35,4 @@ jobs:
         target/efi/services_benchmark_test_debug.efi
         target/efi/services_benchmark_test.efi
     secrets: inherit
+    

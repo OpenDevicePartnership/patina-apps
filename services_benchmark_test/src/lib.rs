@@ -17,9 +17,9 @@
 //!
 //! ## License
 //!
-//! Copyright (c) Microsoft Corporation. All rights reserved.
+//! Copyright (c) Microsoft Corporation.
 //!
-//! SPDX-License-Identifier: BSD-2-Clause-Patent
+//! SPDX-License-Identifier: Apache-2.0
 #![cfg_attr(target_os = "uefi", no_std)]
 
 cfg_if::cfg_if! {
@@ -46,11 +46,9 @@ cfg_if::cfg_if! {
 
             let mut output_buf = String::new();
 
-            log::info!("here1");
             write_headers(&mut output_buf)?;
 
             for (bf, num_calls) in BENCH_FNS {
-                log::info!("bf name: {}", bf.name);
                 // Run a few warmup iterations. (10% of the benchmark iterations).
                 (bf.func)(handle, num_calls / 10)?;
 
@@ -58,7 +56,6 @@ cfg_if::cfg_if! {
                 let cycles_res = bench_func(handle, num_calls);
                 match cycles_res {
                     Ok(cycles_stats) => {
-                        log::info!("running");
                         // Calculate total time in milliseconds. Formula: ms = cycles / (cycles / s) * 1000.
                         let total_time_ms = (cycles_stats.count as f64) / (Arch::perf_frequency() as f64) * 1000.0;
                         write_result_row(&mut output_buf, bench_name, cycles_stats, total_time_ms, num_calls)?;
@@ -87,7 +84,6 @@ cfg_if::cfg_if! {
 
         // Writes the header rows for the fixed-width results markdown table.
         pub fn write_headers(output_buf: &mut String) -> Result<(), BenchError> {
-            log::info!("Writing table headers");
             // Column headers.
             writeln!(
                 output_buf,
@@ -102,15 +98,13 @@ cfg_if::cfg_if! {
                 "SD [cycles]"
             )
             .map_err(|e| BenchError::WriteOutput("Write table header failed", e))?;
-            log::info!("Writing table headers1");
-            // Column seperators.
+            // Column separators.
             writeln!(
                 output_buf,
                 "| {:-<32} | {:-<14} | {:-<12} | {:-<15} | {:-<15} | {:-<12} | {:-<12} | {:-<12} |",
                 "-", "-", "-", "-", "-", "-", "-", "-"
             )
             .map_err(|e| BenchError::WriteOutput("Write table header failed", e))?;
-            log::info!("Writing table headers2");
             Ok(())
         }
 

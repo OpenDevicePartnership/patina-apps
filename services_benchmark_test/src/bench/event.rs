@@ -8,6 +8,7 @@ use rolling_stats::Stats;
 
 use crate::{BOOT_SERVICES, error::BenchError};
 
+/// Benchmarks checking the state of an already-signaled event (fast path).
 pub(crate) fn bench_check_event_signaled(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     extern "efiapi" fn test_notify(_event: efi::Event, _context: *mut c_void) {}
     let mut stats: Stats<f64> = Stats::new();
@@ -21,6 +22,7 @@ pub(crate) fn bench_check_event_signaled(_handle: efi::Handle, num_calls: usize)
             )
         }
         .map_err(|e| BenchError::BenchSetup("Failed to create event", e))?;
+        // Signal the event to set it to the signaled state.
         BOOT_SERVICES.signal_event(event_handle).map_err(|e| BenchError::BenchSetup("Failed to signal event", e))?;
 
         let start = Arch::cpu_count();
@@ -33,6 +35,7 @@ pub(crate) fn bench_check_event_signaled(_handle: efi::Handle, num_calls: usize)
     Ok(stats)
 }
 
+/// Benchmarks checking the state of an unsignaled event (slow path).
 pub(crate) fn bench_check_event_unsignaled(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     extern "efiapi" fn test_notify(_event: efi::Event, _context: *mut c_void) {}
     let mut stats: Stats<f64> = Stats::new();
@@ -62,6 +65,7 @@ pub(crate) fn bench_check_event_unsignaled(_handle: efi::Handle, num_calls: usiz
     Ok(stats)
 }
 
+/// Benchmarks event creation performance.
 pub(crate) fn bench_create_event(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     extern "efiapi" fn test_notify(_event: efi::Event, _context: *mut c_void) {}
     let mut stats: Stats<f64> = Stats::new();
@@ -79,6 +83,7 @@ pub(crate) fn bench_create_event(_handle: efi::Handle, num_calls: usize) -> Resu
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
 
+        // Clean up the created event.
         BOOT_SERVICES.close_event(event_handle).map_err(|e| BenchError::BenchCleanup("Failed to close event", e))?;
     }
     Ok(stats)
@@ -105,6 +110,7 @@ pub(crate) fn bench_close_event(_handle: efi::Handle, num_calls: usize) -> Resul
     Ok(stats)
 }
 
+/// Benchmarks individual event signaling.
 pub(crate) fn bench_signal_event(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     extern "efiapi" fn test_notify(_event: efi::Event, _context: *mut c_void) {}
     let mut stats: Stats<f64> = Stats::new();
@@ -129,6 +135,7 @@ pub(crate) fn bench_signal_event(_handle: efi::Handle, num_calls: usize) -> Resu
     Ok(stats)
 }
 
+/// Tests signaling multiple events as a group.
 pub(crate) fn bench_signal_event_group(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     let mut stats: Stats<f64> = Stats::new();
 

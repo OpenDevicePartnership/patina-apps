@@ -1,13 +1,14 @@
 #
-# Copyright (c) Microsoft Corporation. All rights reserved.
-# SPDX-License-Identifier: BSD-2-Clause-Patent
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0
 #
 [package]
 name = "services_benchmark_test"
-version = "0.0.1"
-edition = "2024"
-authors = ["Microsoft"]
+version.workspace = true
+edition.workspace = true
+repository.workspace = true
 license.workspace = true
+description = "Core service benchmarks"
 
 [lib]
 name = "services_benchmark_test"

@@ -10,7 +10,9 @@ use crate::{
     error::BenchError,
 };
 
+/// Benchmarks the UEFI driver model's controller connection mechanism.
 pub(crate) fn bench_connect_controller(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
+    /// Mock driver binding protocols definitions.
     extern "efiapi" fn mock_supported(
         _this: *mut efi::protocols::driver_binding::Protocol,
         _controller_handle: efi::Handle,
@@ -36,6 +38,7 @@ pub(crate) fn bench_connect_controller(_handle: efi::Handle, num_calls: usize) -
         efi::Status::SUCCESS
     }
 
+    // Setup controller, driver, and image handles with test protocols.
     let controller_handle = unsafe {
         BOOT_SERVICES
             .install_protocol_interface_unchecked(None, &TEST_GUID1, 0x1111 as *mut core::ffi::c_void)
@@ -51,14 +54,9 @@ pub(crate) fn bench_connect_controller(_handle: efi::Handle, num_calls: usize) -
             .map_err(|e| BenchError::BenchSetup("Failed to install protocol interface for driver", e))
     }?;
 
-    let image_handle = unsafe {
-        BOOT_SERVICES.install_protocol_interface_unchecked(
-            None,
-            &TEST_GUID2,
-            core::ptr::null_mut(), // Dummy protocol data for test
-        )
-    }
-    .map_err(|e| BenchError::BenchSetup("Failed to install protocol interface for image", e))?;
+    let image_handle =
+        unsafe { BOOT_SERVICES.install_protocol_interface_unchecked(None, &TEST_GUID2, core::ptr::null_mut()) }
+            .map_err(|e| BenchError::BenchSetup("Failed to install protocol interface for image", e))?;
     let binding = Box::new(efi::protocols::driver_binding::Protocol {
         version: 10,
         supported: mock_supported,
@@ -88,7 +86,6 @@ pub(crate) fn bench_connect_controller(_handle: efi::Handle, num_calls: usize) -
                 .map_err(|e| BenchError::BenchTest("Failed to connect controller", e))?;
         }
         let end = Arch::cpu_count();
-        stats.update((end - start) as f64);
         stats.update((end - start) as f64);
         BOOT_SERVICES
             .disconnect_controller(controller_handle, None, None)

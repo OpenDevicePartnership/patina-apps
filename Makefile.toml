@@ -138,11 +138,12 @@ dependencies = ["build-x64", "build-arm64"]
 description = "Build EFI application in debug mode"
 dependencies = ["build-bin", "copy-efi-debug"]
 
-# Test task
 [tasks.test]
-description = "Run tests for the package"
+description = "Run tests and collect coverage data without generating reports."
+install_crate = false
+clear = true
 command = "cargo"
-args = ["test", "-p", "${PACKAGE_NAME}"]
+args = ["llvm-cov", "--no-report"]
 
 # Clippy linting
 [tasks.clippy]
@@ -177,16 +178,12 @@ command = "cargo"
 args = ["deny", "check"]
 
 [tasks.coverage]
-description = "Build and run all tests and calculate coverage."
+description = "Generate an LCOV coverage report from collected data."
+install_crate = false
 clear = true
 command = "cargo"
-args = [
-    "tarpaulin",
-    "--output-dir",
-    "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/target",
-    "--out",
-    "Html",
-]
+args = ["llvm-cov", "report", "--lcov", "--output-path", "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/target/lcov.info"]
+dependencies = ["test"]
 
 [tasks.doc]
 env = { RUSTDOCFLAGS = "-D warnings" }

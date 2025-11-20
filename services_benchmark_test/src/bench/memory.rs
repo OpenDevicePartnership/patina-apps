@@ -8,12 +8,14 @@ use rolling_stats::Stats;
 
 use crate::{BOOT_SERVICES, error::BenchError};
 
+/// Benchmarks page-level memory allocation.
 pub(crate) fn bench_allocate_pages(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
         let start = Arch::cpu_count();
+        // Use `BOOT_SERVICES_DATA` as it is commonly allocated during boot services/driver initialization.
         let pages = BOOT_SERVICES
-            .allocate_pages(boot_services::allocation::AllocType::AnyPage, MemoryType::ACPI_MEMORY_NVS, 1)
+            .allocate_pages(boot_services::allocation::AllocType::AnyPage, MemoryType::BOOT_SERVICES_DATA, 1)
             .map_err(|e| BenchError::BenchTest("Failed to allocate pages", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
@@ -23,12 +25,14 @@ pub(crate) fn bench_allocate_pages(_handle: efi::Handle, num_calls: usize) -> Re
     Ok(stats)
 }
 
+/// Benchmarks pool memory allocation.
 pub(crate) fn bench_allocate_pool(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
         let start = Arch::cpu_count();
+        // Use `BOOT_SERVICES_DATA` as it is commonly allocated during boot services/driver initialization.
         let pool = BOOT_SERVICES
-            .allocate_pool(MemoryType::ACPI_MEMORY_NVS, UEFI_PAGE_SIZE / 4)
+            .allocate_pool(MemoryType::BOOT_SERVICES_DATA, UEFI_PAGE_SIZE / 4)
             .map_err(|e| BenchError::BenchTest("Failed to allocate pool", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
@@ -38,11 +42,13 @@ pub(crate) fn bench_allocate_pool(_handle: efi::Handle, num_calls: usize) -> Res
     Ok(stats)
 }
 
+/// Benchmarks page memory deallocation.
 pub(crate) fn bench_free_pages(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
+        // Use `BOOT_SERVICES_DATA` as it is commonly allocated during boot services/driver initialization.
         let pages = BOOT_SERVICES
-            .allocate_pages(boot_services::allocation::AllocType::AnyPage, MemoryType::ACPI_MEMORY_NVS, 1)
+            .allocate_pages(boot_services::allocation::AllocType::AnyPage, MemoryType::BOOT_SERVICES_DATA, 1)
             .map_err(|e| BenchError::BenchSetup("Failed to allocate pages", e))?;
 
         let start = Arch::cpu_count();
@@ -53,11 +59,13 @@ pub(crate) fn bench_free_pages(_handle: efi::Handle, num_calls: usize) -> Result
     Ok(stats)
 }
 
+/// Benchmarks pool memory deallocation.
 pub(crate) fn bench_free_pool(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
+        // Use `BOOT_SERVICES_DATA` as it is commonly allocated during boot services/driver initialization.
         let pool = BOOT_SERVICES
-            .allocate_pool(MemoryType::ACPI_MEMORY_NVS, UEFI_PAGE_SIZE / 4)
+            .allocate_pool(MemoryType::BOOT_SERVICES_DATA, UEFI_PAGE_SIZE / 4)
             .map_err(|e| BenchError::BenchSetup("Failed to allocate pool", e))?;
 
         let start = Arch::cpu_count();
@@ -68,6 +76,7 @@ pub(crate) fn bench_free_pool(_handle: efi::Handle, num_calls: usize) -> Result<
     Ok(stats)
 }
 
+/// Benchmarks memory copying performance.
 pub(crate) fn bench_copy_mem(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     let src: u64 = 5678;
     let mut dst: u64 = 1234;
@@ -81,6 +90,7 @@ pub(crate) fn bench_copy_mem(_handle: efi::Handle, num_calls: usize) -> Result<S
     Ok(stats)
 }
 
+/// Benchmarks memory initialization performance.
 pub(crate) fn bench_set_mem(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     let mut dst: [u8; 128] = [0; 128];
     let mut stats: Stats<f64> = Stats::new();
@@ -93,6 +103,7 @@ pub(crate) fn bench_set_mem(_handle: efi::Handle, num_calls: usize) -> Result<St
     Ok(stats)
 }
 
+/// Benchmarks system memory map retrieval.
 pub(crate) fn bench_get_memory_map(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {

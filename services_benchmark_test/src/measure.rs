@@ -43,7 +43,7 @@ pub static BENCH_FNS: [(BenchFnWrapper, usize); 30] = [
     (BenchFnWrapper { func: bench_create_event, name: "create_event" }, 1000),
     (BenchFnWrapper { func: bench_close_event, name: "close_event" }, 1000),
     (BenchFnWrapper { func: bench_signal_event, name: "signal_event" }, 100_000),
-    (BenchFnWrapper { func: bench_signal_event_group, name: "signal_event" }, 100),
+    (BenchFnWrapper { func: bench_signal_event_group, name: "signal_event_group" }, 100),
     /* IMAGE SERVICES */
     (BenchFnWrapper { func: bench_start_image_and_exit, name: "start_image, exit" }, 100),
     (BenchFnWrapper { func: bench_load_image, name: "load_image" }, 100),

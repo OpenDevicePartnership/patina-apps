@@ -7,6 +7,7 @@ use rolling_stats::Stats;
 
 use crate::{BOOT_SERVICES, bench::TEST_GUID1, error::BenchError};
 
+/// Benchmarks protocol installation performance.
 pub(crate) fn bench_install_protocol_interface(
     _handle: efi::Handle,
     num_calls: usize,
@@ -31,7 +32,10 @@ pub(crate) fn bench_install_protocol_interface(
     Ok(stats)
 }
 
+/// Benchmarks protocol opening performance.
+/// This is the preferred method (over `handle_protcol`) for retrieving protocol interfaces in modern UEFI (2.0+).
 pub(crate) fn bench_open_protocol(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
+    // Set up and install the protocol to be opened.
     let interface1: *mut c_void = 0x1234 as *mut c_void;
     let agent_handle = unsafe { BOOT_SERVICES.install_protocol_interface_unchecked(None, &TEST_GUID1, interface1) }
         .map_err(|e| BenchError::BenchSetup("Failed to install agent protocol", e))?;
@@ -61,10 +65,25 @@ pub(crate) fn bench_open_protocol(_handle: efi::Handle, num_calls: usize) -> Res
             .close_protocol(protocol_handle, &TEST_GUID1, agent_handle, controller_handle)
             .map_err(|e| BenchError::BenchCleanup("Failed to close protocol", e))?;
     }
+
+    // Uninstall mock protocols after benchmarking.
+    unsafe {
+        BOOT_SERVICES
+            .uninstall_protocol_interface_unchecked(protocol_handle, &TEST_GUID1, interface1)
+            .map_err(|e| BenchError::BenchCleanup("Failed to uninstall protocol", e))?;
+        BOOT_SERVICES
+            .uninstall_protocol_interface_unchecked(agent_handle, &TEST_GUID1, interface1)
+            .map_err(|e| BenchError::BenchCleanup("Failed to uninstall agent protocol", e))?;
+        BOOT_SERVICES
+            .uninstall_protocol_interface_unchecked(controller_handle, &TEST_GUID1, interface1)
+            .map_err(|e| BenchError::BenchCleanup("Failed to uninstall controller protocol", e))?;
+    }
     Ok(stats)
 }
 
+/// Benchmarks protocol closing performance.
 pub(crate) fn bench_close_protocol(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
+    // Set up and install the necessary protocol.
     let interface1: *mut c_void = 0x1234 as *mut c_void;
     let agent_handle = unsafe { BOOT_SERVICES.install_protocol_interface_unchecked(None, &TEST_GUID1, interface1) }
         .map_err(|e| BenchError::BenchSetup("Failed install agent handle", e))?;
@@ -97,7 +116,10 @@ pub(crate) fn bench_close_protocol(_handle: efi::Handle, num_calls: usize) -> Re
     Ok(stats)
 }
 
+/// Benchmarks protocol handling performance.
+/// This is a legacy method but is still included due to needing to support legacy UEFI (1.0).
 pub(crate) fn bench_handle_protocol(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
+    // Set up and install the protocol to be accessed.
     let interface1: *mut c_void = 0x1234 as *mut c_void;
     let protocol_handle = unsafe { BOOT_SERVICES.install_protocol_interface_unchecked(None, &TEST_GUID1, interface1) }
         .map_err(|e| BenchError::BenchSetup("Failed to install protocol", e))?;
@@ -116,7 +138,9 @@ pub(crate) fn bench_handle_protocol(_handle: efi::Handle, num_calls: usize) -> R
     Ok(stats)
 }
 
+/// Benchmarks device path resolution.
 pub(crate) fn bench_locate_device_path(handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
+    // Install a protocol on the current image to get a valid device handle.
     let loaded_image_protocol = unsafe {
         BOOT_SERVICES
             .handle_protocol::<efi::protocols::loaded_image::Protocol>(handle)
@@ -144,6 +168,7 @@ pub(crate) fn bench_locate_device_path(handle: efi::Handle, num_calls: usize) ->
     Ok(stats)
 }
 
+/// Benchmarks protocol metadata retrieval.
 pub(crate) fn bench_open_protocol_information(handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
@@ -158,6 +183,7 @@ pub(crate) fn bench_open_protocol_information(handle: efi::Handle, num_calls: us
     Ok(stats)
 }
 
+/// Benchmarks handle protocol enumeration.
 pub(crate) fn bench_protocols_per_handle(handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
@@ -172,7 +198,9 @@ pub(crate) fn bench_protocols_per_handle(handle: efi::Handle, num_calls: usize) 
     Ok(stats)
 }
 
+/// Benchmarks protocol notification registration.
 pub(crate) fn bench_register_protocol_notify(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
+    // Mock notify does nothing.
     extern "efiapi" fn mock_notify(_ptr: *mut c_void, _data: *mut i32) {}
 
     let mut stats: Stats<f64> = Stats::new();
@@ -193,11 +221,14 @@ pub(crate) fn bench_register_protocol_notify(_handle: efi::Handle, num_calls: us
             .map_err(|e| BenchError::BenchTest("Failed to register protocol notify", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
+
+        BOOT_SERVICES.close_event(event).map_err(|e| BenchError::BenchCleanup("Failed to close event", e))?;
     }
 
     Ok(stats)
 }
 
+/// Benchmarks protocol update performance.
 pub(crate) fn bench_reinstall_protocol_interface(
     _handle: efi::Handle,
     num_calls: usize,
@@ -223,6 +254,7 @@ pub(crate) fn bench_reinstall_protocol_interface(
     Ok(stats)
 }
 
+/// Benchmarks protocol removal performance.
 pub(crate) fn bench_uninstall_protocol_interface(
     _handle: efi::Handle,
     num_calls: usize,
@@ -242,7 +274,7 @@ pub(crate) fn bench_uninstall_protocol_interface(
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
 
-        // Reinstall for next iteration
+        // Reinstall for next iteration.
         unsafe {
             protocol_handle = BOOT_SERVICES
                 .install_protocol_interface_unchecked(None, &TEST_GUID1, interface1)

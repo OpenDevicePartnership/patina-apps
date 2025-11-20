@@ -1,7 +1,8 @@
 use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};
 use patina::{
     base::UEFI_PAGE_SIZE,
-    boot_services::{self, BootServices as _, allocation::MemoryType},
+    boot_services::{self, BootServices as _},
+    efi_types::EfiMemoryType,
 };
 use r_efi::efi;
 use rolling_stats::Stats;
@@ -15,7 +16,7 @@ pub(crate) fn bench_allocate_pages(_handle: efi::Handle, num_calls: usize) -> Re
         let start = Arch::cpu_count();
         // Use `BOOT_SERVICES_DATA` as it is commonly allocated during boot services/driver initialization.
         let pages = BOOT_SERVICES
-            .allocate_pages(boot_services::allocation::AllocType::AnyPage, MemoryType::BOOT_SERVICES_DATA, 1)
+            .allocate_pages(boot_services::allocation::AllocType::AnyPage, EfiMemoryType::BootServicesData, 1)
             .map_err(|e| BenchError::BenchTest("Failed to allocate pages", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
@@ -32,7 +33,7 @@ pub(crate) fn bench_allocate_pool(_handle: efi::Handle, num_calls: usize) -> Res
         let start = Arch::cpu_count();
         // Use `BOOT_SERVICES_DATA` as it is commonly allocated during boot services/driver initialization.
         let pool = BOOT_SERVICES
-            .allocate_pool(MemoryType::BOOT_SERVICES_DATA, UEFI_PAGE_SIZE / 4)
+            .allocate_pool(EfiMemoryType::BootServicesData, UEFI_PAGE_SIZE / 4)
             .map_err(|e| BenchError::BenchTest("Failed to allocate pool", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
@@ -48,7 +49,7 @@ pub(crate) fn bench_free_pages(_handle: efi::Handle, num_calls: usize) -> Result
     for _ in 0..num_calls {
         // Use `BOOT_SERVICES_DATA` as it is commonly allocated during boot services/driver initialization.
         let pages = BOOT_SERVICES
-            .allocate_pages(boot_services::allocation::AllocType::AnyPage, MemoryType::BOOT_SERVICES_DATA, 1)
+            .allocate_pages(boot_services::allocation::AllocType::AnyPage, EfiMemoryType::BootServicesData, 1)
             .map_err(|e| BenchError::BenchSetup("Failed to allocate pages", e))?;
 
         let start = Arch::cpu_count();
@@ -65,7 +66,7 @@ pub(crate) fn bench_free_pool(_handle: efi::Handle, num_calls: usize) -> Result<
     for _ in 0..num_calls {
         // Use `BOOT_SERVICES_DATA` as it is commonly allocated during boot services/driver initialization.
         let pool = BOOT_SERVICES
-            .allocate_pool(MemoryType::BOOT_SERVICES_DATA, UEFI_PAGE_SIZE / 4)
+            .allocate_pool(EfiMemoryType::BootServicesData, UEFI_PAGE_SIZE / 4)
             .map_err(|e| BenchError::BenchSetup("Failed to allocate pool", e))?;
 
         let start = Arch::cpu_count();

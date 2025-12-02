@@ -5,7 +5,11 @@ use patina::boot_services::{BootServices, event::EventType, tpl::Tpl};
 use r_efi::efi;
 use rolling_stats::Stats;
 
-use crate::{BOOT_SERVICES, bench::TEST_GUID1, error::BenchError};
+use crate::{
+    BOOT_SERVICES,
+    bench::{TEST_GUID1, TestProtocol1},
+    error::BenchError,
+};
 
 /// Benchmarks protocol installation performance.
 pub(crate) fn bench_install_protocol_interface(
@@ -16,18 +20,14 @@ pub(crate) fn bench_install_protocol_interface(
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
         let start = Arch::cpu_count();
-        let protocol_handle = unsafe {
-            BOOT_SERVICES
-                .install_protocol_interface_unchecked(None, &TEST_GUID1, protocol_interface)
-                .map_err(|e| BenchError::BenchTest("Failed to install protocol", e))?
-        };
+        let protocol_install = BOOT_SERVICES
+            .install_protocol_interface(None, Box::new(TestProtocol1 {}))
+            .map_err(|e| BenchError::BenchTest("Failed to install protocol", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
-        unsafe {
-            BOOT_SERVICES
-                .uninstall_protocol_interface_unchecked(protocol_handle, &TEST_GUID1, protocol_interface)
-                .map_err(|e| BenchError::BenchCleanup("Failed to uninstall protocol", e))?;
-        };
+        BOOT_SERVICES
+            .uninstall_protocol_interface(protocol_install.0, protocol_install.1)
+            .map_err(|e| BenchError::BenchCleanup("Failed to uninstall protocol", e))?;
     }
     Ok(stats)
 }
@@ -36,26 +36,21 @@ pub(crate) fn bench_install_protocol_interface(
 /// This is the preferred method (over `handle_protcol`) for retrieving protocol interfaces in modern UEFI (2.0+).
 pub(crate) fn bench_open_protocol(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     // Set up and install the protocol to be opened.
-    let interface1: *mut c_void = 0x1234 as *mut c_void;
-    let agent_handle = unsafe { BOOT_SERVICES.install_protocol_interface_unchecked(None, &TEST_GUID1, interface1) }
+    let agent_handle = BOOT_SERVICES
+        .install_protocol_interface(None, Box::new(TestProtocol1 {}))
         .map_err(|e| BenchError::BenchSetup("Failed to install agent protocol", e))?;
-    let controller_handle =
-        unsafe { BOOT_SERVICES.install_protocol_interface_unchecked(None, &TEST_GUID1, interface1) }
-            .map_err(|e| BenchError::BenchSetup("Failed to install controller protocol", e))?;
-    let protocol_handle = unsafe { BOOT_SERVICES.install_protocol_interface_unchecked(None, &TEST_GUID1, interface1) }
+    let controller_handle = BOOT_SERVICES
+        .install_protocol_interface(None, Box::new(TestProtocol1 {}))
+        .map_err(|e| BenchError::BenchSetup("Failed to install controller protocol", e))?;
+    let protocol_handle = BOOT_SERVICES
+        .install_protocol_interface(None, Box::new(TestProtocol1 {}))
         .map_err(|e| BenchError::BenchSetup("Failed to install protocol", e))?;
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
         let start = Arch::cpu_count();
         unsafe {
             BOOT_SERVICES
-                .open_protocol_unchecked(
-                    protocol_handle,
-                    &TEST_GUID1,
-                    agent_handle,
-                    controller_handle,
-                    efi::OPEN_PROTOCOL_BY_DRIVER,
-                )
+                .open_protocol(protocol_handle, agent_handle, controller_handle, efi::OPEN_PROTOCOL_BY_DRIVER)
                 .map_err(|e| BenchError::BenchTest("Failed to open protocol", e))?;
         }
         let end = Arch::cpu_count();

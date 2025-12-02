@@ -13,15 +13,9 @@ pub(crate) fn bench_check_event_signaled(_handle: efi::Handle, num_calls: usize)
     extern "efiapi" fn test_notify(_event: efi::Event, _context: *mut c_void) {}
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
-        let event_handle = unsafe {
-            BOOT_SERVICES.create_event_unchecked(
-                EventType::NOTIFY_WAIT,
-                Tpl::NOTIFY,
-                Some(test_notify),
-                ptr::null_mut(),
-            )
-        }
-        .map_err(|e| BenchError::BenchSetup("Failed to create event", e))?;
+        let event_handle = BOOT_SERVICES
+            .create_event(EventType::NOTIFY_WAIT, Tpl::NOTIFY, Some(test_notify), ptr::null_mut())
+            .map_err(|e| BenchError::BenchSetup("Failed to create event", e))?;
         // Signal the event to set it to the signaled state.
         BOOT_SERVICES.signal_event(event_handle).map_err(|e| BenchError::BenchSetup("Failed to signal event", e))?;
 
@@ -40,15 +34,9 @@ pub(crate) fn bench_check_event_unsignaled(_handle: efi::Handle, num_calls: usiz
     extern "efiapi" fn test_notify(_event: efi::Event, _context: *mut c_void) {}
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
-        let event_handle = unsafe {
-            BOOT_SERVICES.create_event_unchecked(
-                EventType::NOTIFY_WAIT,
-                Tpl::NOTIFY,
-                Some(test_notify),
-                ptr::null_mut(),
-            )
-        }
-        .map_err(|e| BenchError::BenchSetup("Failed to create event", e))?;
+        let event_handle = BOOT_SERVICES
+            .create_event(EventType::NOTIFY_WAIT, Tpl::NOTIFY, Some(test_notify), ptr::null_mut())
+            .map_err(|e| BenchError::BenchSetup("Failed to create event", e))?;
 
         let start = Arch::cpu_count();
         if let Err(e) = BOOT_SERVICES.check_event(event_handle) {
@@ -71,15 +59,9 @@ pub(crate) fn bench_create_event(_handle: efi::Handle, num_calls: usize) -> Resu
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
         let start = Arch::cpu_count();
-        let event_handle = unsafe {
-            BOOT_SERVICES.create_event_unchecked(
-                EventType::NOTIFY_WAIT,
-                Tpl::NOTIFY,
-                Some(test_notify),
-                ptr::null_mut(),
-            )
-        }
-        .map_err(|e| BenchError::BenchTest("Failed to create event", e))?;
+        let event_handle = BOOT_SERVICES
+            .create_event(EventType::NOTIFY_WAIT, Tpl::NOTIFY, Some(test_notify), ptr::null_mut())
+            .map_err(|e| BenchError::BenchTest("Failed to create event", e))?;
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
 
@@ -93,15 +75,9 @@ pub(crate) fn bench_close_event(_handle: efi::Handle, num_calls: usize) -> Resul
     extern "efiapi" fn test_notify(_event: efi::Event, _context: *mut c_void) {}
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
-        let event_handle = unsafe {
-            BOOT_SERVICES.create_event_unchecked(
-                EventType::NOTIFY_WAIT,
-                Tpl::NOTIFY,
-                Some(test_notify),
-                ptr::null_mut(),
-            )
-        }
-        .map_err(|e| BenchError::BenchSetup("Failed to create event", e))?;
+        let event_handle = BOOT_SERVICES
+            .create_event(EventType::NOTIFY_WAIT, Tpl::NOTIFY, Some(test_notify), ptr::null_mut())
+            .map_err(|e| BenchError::BenchSetup("Failed to create event", e))?;
         let start = Arch::cpu_count();
         BOOT_SERVICES.close_event(event_handle).map_err(|e| BenchError::BenchTest("Failed to close event", e))?;
         let end = Arch::cpu_count();
@@ -115,15 +91,9 @@ pub(crate) fn bench_signal_event(_handle: efi::Handle, num_calls: usize) -> Resu
     extern "efiapi" fn test_notify(_event: efi::Event, _context: *mut c_void) {}
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
-        let event_handle = unsafe {
-            BOOT_SERVICES.create_event_unchecked(
-                EventType::NOTIFY_WAIT,
-                Tpl::NOTIFY,
-                Some(test_notify),
-                ptr::null_mut(),
-            )
-        }
-        .map_err(|e| BenchError::BenchSetup("Failed to create event", e))?;
+        let event_handle = BOOT_SERVICES
+            .create_event(EventType::NOTIFY_WAIT, Tpl::NOTIFY, Some(test_notify), ptr::null_mut())
+            .map_err(|e| BenchError::BenchSetup("Failed to create event", e))?;
 
         let start = Arch::cpu_count();
         BOOT_SERVICES.signal_event(event_handle).map_err(|e| BenchError::BenchTest("Failed to signal event", e))?;
@@ -149,16 +119,15 @@ pub(crate) fn bench_signal_event_group(_handle: efi::Handle, num_calls: usize) -
     // The event group will increase in size with each iteration to test the impact of group size on signaling time.
     let mut event_grp = Vec::with_capacity(num_calls);
     for _ in 0..num_calls {
-        let event_handle = unsafe {
-            BOOT_SERVICES.create_event_ex_unchecked(
+        let event_handle = BOOT_SERVICES
+            .create_event_ex(
                 EventType::NOTIFY_WAIT,
                 Tpl::NOTIFY,
-                test_notify,
+                Some(test_notify),
                 ptr::null_mut(),
                 &BENCH_EVENT_GROUP,
             )
-        }
-        .map_err(|e| BenchError::BenchSetup("Failed to create event", e))?;
+            .map_err(|e| BenchError::BenchSetup("Failed to create event", e))?;
         event_grp.push(event_handle);
 
         let start = Arch::cpu_count();

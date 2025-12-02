@@ -6,7 +6,7 @@ use rolling_stats::Stats;
 
 use crate::{
     BOOT_SERVICES,
-    bench::{TEST_GUID1, TEST_GUID2},
+    bench::{TEST_GUID1, TEST_GUID2, TestProtocol1, TestProtocol2},
     error::BenchError,
 };
 
@@ -39,24 +39,24 @@ pub(crate) fn bench_connect_controller(_handle: efi::Handle, num_calls: usize) -
     }
 
     // Setup controller, driver, and image handles with test protocols.
-    let controller_handle = unsafe {
-        BOOT_SERVICES
-            .install_protocol_interface_unchecked(None, &TEST_GUID1, 0x1111 as *mut core::ffi::c_void)
-            .map_err(|e| BenchError::BenchSetup("Failed to install protocol interface for controller", e))
-    }?;
-    let driver_handle = unsafe {
-        BOOT_SERVICES
-            .install_protocol_interface_unchecked(
-                None,
-                &efi::protocols::device_path::PROTOCOL_GUID,
-                0x2222 as *mut core::ffi::c_void,
-            )
-            .map_err(|e| BenchError::BenchSetup("Failed to install protocol interface for driver", e))
-    }?;
+    let controller_handle = BOOT_SERVICES
+        .install_protocol_interface(None, Box::new(TestProtocol1 {}))
+        .map_err(|e| BenchError::BenchSetup("Failed to install protocol interface for controller", e))?
+        .0;
 
-    let image_handle =
-        unsafe { BOOT_SERVICES.install_protocol_interface_unchecked(None, &TEST_GUID2, core::ptr::null_mut()) }
-            .map_err(|e| BenchError::BenchSetup("Failed to install protocol interface for image", e))?;
+    let driver_handle = BOOT_SERVICES
+        .install_protocol_interface(
+            None,
+            Box::new(efi::protocols::device_path::Protocol { r#type: 4, sub_type: 5, length: [0, 0] }),
+        )
+        .map_err(|e| BenchError::BenchSetup("Failed to install protocol interface for driver", e))?
+        .0;
+
+    let image_handle = BOOT_SERVICES
+        .install_protocol_interface(None, Box::new(TestProtocol2 {}))
+        .map_err(|e| BenchError::BenchSetup("Failed to install protocol interface for image", e))?
+        .0;
+
     let binding = Box::new(efi::protocols::driver_binding::Protocol {
         version: 10,
         supported: mock_supported,
@@ -65,21 +65,16 @@ pub(crate) fn bench_connect_controller(_handle: efi::Handle, num_calls: usize) -
         driver_binding_handle: driver_handle,
         image_handle,
     });
-    let binding_ptr = Box::into_raw(binding) as *mut core::ffi::c_void;
 
-    unsafe {
-        BOOT_SERVICES
-            .install_protocol_interface_unchecked(
-                Some(driver_handle),
-                &efi::protocols::driver_binding::PROTOCOL_GUID,
-                binding_ptr,
-            )
-            .map_err(|e| BenchError::BenchSetup("Failed to install protocol interface for driver binding", e))?;
-    }
+    let driver_binding_key = BOOT_SERVICES
+        .install_protocol_interface(Some(driver_handle), binding)
+        .map_err(|e| BenchError::BenchSetup("Failed to install protocol interface for driver binding", e))?
+        .1;
 
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
         let start = Arch::cpu_count();
+        // SAFETY: All handles and pointers are valid (constructed by benchmark).
         unsafe {
             BOOT_SERVICES
                 .connect_controller(controller_handle, vec![driver_handle], core::ptr::null_mut(), false)
@@ -93,15 +88,9 @@ pub(crate) fn bench_connect_controller(_handle: efi::Handle, num_calls: usize) -
     }
 
     // Uninstall protocols to prevent side effects.
-    unsafe {
-        BOOT_SERVICES
-            .uninstall_protocol_interface_unchecked(
-                driver_handle,
-                &efi::protocols::device_path::PROTOCOL_GUID,
-                0x2222 as *mut core::ffi::c_void,
-            )
-            .map_err(|e| BenchError::BenchCleanup("Failed to uninstall protocol interface", e))?
-    };
+    BOOT_SERVICES
+        .uninstall_protocol_interface(driver_handle, driver_binding_key)
+        .map_err(|e| BenchError::BenchCleanup("Failed to uninstall protocol interface", e))?;
 
     Ok(stats)
 }

@@ -25,8 +25,15 @@
 /// Global instance of UEFI Boot Services.
 pub static BOOT_SERVICES: StandardBootServices = StandardBootServices::new_uninit();
 
+#[cfg(target_os = "uefi")]
 extern crate alloc;
-use alloc::{string::ToString, vec::Vec};
+
+#[cfg(target_os = "uefi")]
+use alloc::{string::String, string::ToString, vec::Vec};
+
+#[cfg(not(target_os = "uefi"))]
+use std::{string::String, string::ToString, vec::Vec};
+
 use core::fmt::Write;
 use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};
 use rolling_stats::Stats;
@@ -35,7 +42,6 @@ use patina::boot_services::StandardBootServices;
 use r_efi::efi;
 
 use crate::{error::BenchError, measure::BENCH_FNS};
-use alloc::string::String;
 
 pub fn bench_start(handle: efi::Handle) -> Result<(), BenchError> {
     log::info!("Starting Services Benchmark Test...");

@@ -25,10 +25,15 @@ cfg-if = { workspace = true }
 log = { workspace = true }
 r-efi = { workspace = true }
 rolling-stats =  { workspace = true }
-uefi = { version = "0.36.0", features = ["alloc", "logger", "global_allocator"] }
 uuid =  { workspace = true }
 
 patina = { workspace = true }
+
+[target.'cfg(target_os = "uefi")'.dependencies]
+uefi = { version = "0.36.0", features = ["alloc", "logger", "global_allocator"] }
+
+[target.'cfg(not(target_os = "uefi"))'.dependencies]
+uefi = { version = "0.36.0", default-features = false }
 
 [dev-dependencies]
 mockall = "0.13.0"

@@ -1,4 +1,9 @@
+#[cfg(target_os = "uefi")]
 use alloc::vec::Vec;
+
+#[cfg(not(target_os = "uefi"))]
+use std::vec::Vec;
+
 use core::{ffi::c_void, ptr};
 
 use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};

@@ -11,12 +11,17 @@ use crate::{
     error::BenchError,
 };
 
+#[cfg(target_os = "uefi")]
+use alloc::boxed::Box;
+
+#[cfg(not(target_os = "uefi"))]
+use std::boxed::Box;
+
 /// Benchmarks protocol installation performance.
 pub(crate) fn bench_install_protocol_interface(
     _handle: efi::Handle,
     num_calls: usize,
 ) -> Result<Stats<f64>, BenchError> {
-    let protocol_interface = 0x1234 as *mut c_void;
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
         let start = Arch::cpu_count();

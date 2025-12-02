@@ -1,4 +1,9 @@
+#[cfg(target_os = "uefi")]
 use alloc::{boxed::Box, vec};
+
+#[cfg(not(target_os = "uefi"))]
+use std::{boxed::Box, vec};
+
 use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};
 use patina::boot_services::BootServices;
 use r_efi::efi;
@@ -6,7 +11,7 @@ use rolling_stats::Stats;
 
 use crate::{
     BOOT_SERVICES,
-    bench::{TEST_GUID1, TEST_GUID2, TestProtocol1, TestProtocol2},
+    bench::{TestProtocol1, TestProtocol2},
     error::BenchError,
 };
 

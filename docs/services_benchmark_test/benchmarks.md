@@ -21,7 +21,7 @@ For more information on boot services, see the [UEFI spec](https://uefi.org/spec
 ### Iterations
 
 The number of iterations per benchmark is derived from operation counts during normal operation of the Patina core.
-The exact counts can be found in [memory_safety_strategy.md in Patina](https://github.com/OpenDevicePartnership/patina/blob/main/docs/src/background/memory_safety_strategy.md?plain=1).
+The exact counts can be found in [memory_safety_strategy.md in Patina](https://opendevicepartnership.github.io/patina/background/memory_safety_strategy.html).
 The benchmarks here use similar orders of magnitude rather than exact counts.
 
 ### 1. Controller Services

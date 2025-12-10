@@ -7,7 +7,6 @@
 
 #[cfg(target_os = "uefi")]
 use alloc::{boxed::Box, vec};
-use uefi::proto::driver;
 
 #[cfg(not(target_os = "uefi"))]
 use std::{boxed::Box, vec};

@@ -1,3 +1,10 @@
+//! Errors that can occur during benchmarking.
+//!
+//! Copyright (c) Microsoft Corporation.
+//!
+//! SPDX-License-Identifier: Apache-2.0
+//!
+
 use core::fmt;
 
 use r_efi::efi;

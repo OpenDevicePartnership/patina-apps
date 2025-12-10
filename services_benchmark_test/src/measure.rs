@@ -1,3 +1,10 @@
+//! Wrapper for benchmarks for easy measurement.
+//!
+//! Copyright (c) Microsoft Corporation.
+//!
+//! SPDX-License-Identifier: Apache-2.0
+//!
+
 use r_efi::efi;
 use rolling_stats::Stats;
 

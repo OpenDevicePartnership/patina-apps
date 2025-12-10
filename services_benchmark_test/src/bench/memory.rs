@@ -1,3 +1,10 @@
+//! Benchmarks for memory operations.
+//!
+//! Copyright (c) Microsoft Corporation.
+//!
+//! SPDX-License-Identifier: Apache-2.0
+//!
+
 use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};
 use patina::{
     base::UEFI_PAGE_SIZE,

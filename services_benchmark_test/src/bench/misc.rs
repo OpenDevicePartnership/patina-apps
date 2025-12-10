@@ -1,3 +1,10 @@
+//! Benchmarks for general UEFI services.
+//!
+//! Copyright (c) Microsoft Corporation.
+//!
+//! SPDX-License-Identifier: Apache-2.0
+//!
+
 use core::ffi::c_void;
 
 use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};
@@ -31,6 +38,7 @@ pub(crate) fn bench_install_configuration_table(
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
         let start = Arch::cpu_count();
+        // SAFETY: The test configuration table has no specific layout requirements.
         unsafe {
             // We do not need to clean up the installed table on each iteration as
             // installing a table with a duplicate GUID simply overwrites the previous entry.
@@ -41,5 +49,12 @@ pub(crate) fn bench_install_configuration_table(
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
     }
+    // Remove the table by passing a NULL pointer.
+    // SAFETY: The test configuration table has no specific layout requirements.
+    (unsafe {
+        BOOT_SERVICES
+            .install_configuration_table(&TEST_GUID1, core::ptr::null_mut() as *const u64 as *mut c_void)
+            .map_err(|e| BenchError::BenchCleanup("Failed to remove configuration table", e))
+    })?;
     Ok(stats)
 }

@@ -1,3 +1,10 @@
+//! Benchmarks for event handling.
+//!
+//! Copyright (c) Microsoft Corporation.
+//!
+//! SPDX-License-Identifier: Apache-2.0
+//!
+
 #[cfg(target_os = "uefi")]
 use alloc::vec::Vec;
 

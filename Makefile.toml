@@ -147,10 +147,10 @@ args = ["llvm-cov", "--no-report"]
 
 # Clippy linting
 [tasks.clippy]
-description = "Run clippy for the package"
+description = "Run cargo clippy."
+clear = true
 command = "cargo"
-args = ["clippy", "-p", "${PACKAGE_NAME}", "--target", "${UEFI_TARGET}", "--", "-D", "warnings"]
-dependencies = ["setup"]
+args = ["clippy", "--all-targets", "--all-features", "--", "-D", "warnings"]
 
 # Format code
 [tasks.fmt]

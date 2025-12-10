@@ -1,3 +1,10 @@
+//! Benchmarks for image loading and execution.
+//!
+//! Copyright (c) Microsoft Corporation.
+//!
+//! SPDX-License-Identifier: Apache-2.0
+//!
+
 use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};
 use patina::boot_services::BootServices;
 use r_efi::efi;

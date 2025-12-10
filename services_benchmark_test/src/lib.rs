@@ -20,6 +20,7 @@
 //! Copyright (c) Microsoft Corporation.
 //!
 //! SPDX-License-Identifier: Apache-2.0
+//!
 #![cfg_attr(target_os = "uefi", no_std)]
 
 /// Global instance of UEFI Boot Services.
@@ -141,6 +142,7 @@ pub unsafe fn print_to_console(message: &str) {
     let st = uefi::table::system_table_raw();
     if let Some(st_ptr) = st {
         let st = st_ptr.as_ptr();
+        // SAFETY: The `uefi` crate guarantees that the System Table pointer is valid after initialization.
         let system_table = unsafe { &*st };
         let con_out = system_table.stdout;
 
@@ -153,7 +155,9 @@ pub unsafe fn print_to_console(message: &str) {
         utf16_buffer.push(0); // Null terminator.
 
         // Call the UEFI console output function.
+        // SAFETY: If the safety conditions are met, the UEFI console output function will be valid.
         let output_string = unsafe { (*con_out).output_string };
+        // SAFETY: If the safety conditions are met, the UEFI console output function will be valid.
         let _ = unsafe { output_string(con_out, utf16_buffer.as_ptr() as *mut u16) };
     }
 }

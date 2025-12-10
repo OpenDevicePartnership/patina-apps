@@ -45,7 +45,7 @@ pub(crate) fn bench_install_protocol_interface(
 }
 
 /// Benchmarks protocol opening performance.
-/// This is the preferred method (over `handle_protcol`) for retrieving protocol interfaces in modern UEFI (2.0+).
+/// This is the preferred method (over `handle_protocol`) for retrieving protocol interfaces in modern UEFI (2.0+).
 pub(crate) fn bench_open_protocol(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     // Set up and install the protocol to be opened.
     let agent_install = BOOT_SERVICES

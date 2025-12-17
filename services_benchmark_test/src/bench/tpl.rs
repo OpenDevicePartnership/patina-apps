@@ -30,6 +30,7 @@ pub(crate) fn bench_raise_tpl(_handle: efi::Handle, num_calls: usize) -> Result<
     Ok(stats)
 }
 
+/// Benchmarks interrupt enable performance.
 pub(crate) fn bench_restore_tpl(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     let mut stats: Stats<f64> = Stats::new();
     let tpl_options = [Tpl::APPLICATION, Tpl::CALLBACK, Tpl::NOTIFY, TPL_HIGH_LEVEL];

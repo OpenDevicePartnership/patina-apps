@@ -18,11 +18,7 @@ use crate::{
     error::BenchError,
 };
 
-#[cfg(target_os = "uefi")]
-use alloc::boxed::Box;
-
-#[cfg(not(target_os = "uefi"))]
-use std::boxed::Box;
+use crate::alloc::boxed::Box;
 
 /// Benchmarks protocol installation performance.
 pub(crate) fn bench_install_protocol_interface(

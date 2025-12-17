@@ -5,11 +5,7 @@
 //! SPDX-License-Identifier: Apache-2.0
 //!
 
-#[cfg(target_os = "uefi")]
-use alloc::{boxed::Box, vec};
-
-#[cfg(not(target_os = "uefi"))]
-use std::{boxed::Box, vec};
+use crate::alloc::{boxed::Box, vec};
 
 use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};
 use patina::boot_services::BootServices;

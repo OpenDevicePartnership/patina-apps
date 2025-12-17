@@ -10,7 +10,7 @@ To build and use the benchmark tool:
 
 ```bash
 # Build a specific package
-cargo make build-package --env PACKAGE=services_benchmark_test
+cargo make --env PACKAGE=services_benchmark_test build-package
 ```
 
 ## Benchmark Categories

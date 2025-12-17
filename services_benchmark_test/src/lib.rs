@@ -29,11 +29,13 @@ pub static BOOT_SERVICES: StandardBootServices = StandardBootServices::new_unini
 #[cfg(target_os = "uefi")]
 extern crate alloc;
 
-#[cfg(target_os = "uefi")]
-use alloc::{string::String, string::ToString, vec::Vec};
-
 #[cfg(not(target_os = "uefi"))]
-use std::{string::String, string::ToString, vec::Vec};
+use std as alloc;
+
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
 
 use core::fmt::Write;
 use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};

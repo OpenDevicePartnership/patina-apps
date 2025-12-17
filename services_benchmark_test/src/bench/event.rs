@@ -5,11 +5,7 @@
 //! SPDX-License-Identifier: Apache-2.0
 //!
 
-#[cfg(target_os = "uefi")]
-use alloc::vec::Vec;
-
-#[cfg(not(target_os = "uefi"))]
-use std::vec::Vec;
+use crate::alloc::vec::Vec;
 
 use core::{ffi::c_void, ptr};
 
@@ -83,6 +79,7 @@ pub(crate) fn bench_create_event(_handle: efi::Handle, num_calls: usize) -> Resu
     Ok(stats)
 }
 
+/// Benchmarks event closing performance.
 pub(crate) fn bench_close_event(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     extern "efiapi" fn test_notify(_event: efi::Event, _context: *mut c_void) {}
     let mut stats: Stats<f64> = Stats::new();

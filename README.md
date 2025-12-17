@@ -22,7 +22,7 @@ cargo make build
 cargo make build-debug
 
 # Build specific app.
-cargo make build-package --env PACKAGE=<app-name>
+cargo make --env PACKAGE=<app-name> build-package
 ```
 
 ### Running

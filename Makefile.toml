@@ -11,7 +11,7 @@ CARGO_MAKE_RUST_TARGET_ARCH = { value = "x86_64", condition = { env_not_set = ["
 PACKAGE_NAME = { value = "services_benchmark_test", condition = { env_not_set = ["PACKAGE_NAME"] } }
 BUILD_MODE = { value = "release", condition = { env_not_set = ["BUILD_MODE"] } }
 
-# Target configuration based on architecture  
+# Target configuration based on architecture
 UEFI_TARGET_X64 = "x86_64-unknown-uefi"
 UEFI_TARGET_ARM64 = "aarch64-unknown-uefi"
 UEFI_TARGET = "x86_64-unknown-uefi"
@@ -122,7 +122,7 @@ description = "Build EFI application for x86_64"
 env = { CARGO_MAKE_RUST_TARGET_ARCH = "x86_64", UEFI_TARGET = "x86_64-unknown-uefi" }
 run_task = "build-efi"
 
-# Build for aarch64 architecture  
+# Build for aarch64 architecture
 [tasks.build-arm64]
 description = "Build EFI application for aarch64"
 env = { CARGO_MAKE_RUST_TARGET_ARCH = "aarch64", UEFI_TARGET = "aarch64-unknown-uefi" }
@@ -142,6 +142,11 @@ dependencies = ["build-bin", "copy-efi-debug"]
 description = "Run tests and collect coverage data without generating reports."
 install_crate = false
 clear = true
+# `coverage_attribute` is deliberately excluded from the default allow-features in
+# .cargo/config.toml so ungated `#[cfg_attr(coverage, coverage(off))]` fails to compile. Coverage runs set the
+# `coverage` cfg (set by cargo-llvm-cov), which needs the feature, so re-add it here.
+# Note: RUSTFLAGS replaces build.rustflags.
+env = { RUSTFLAGS = "-Z allow-features=c_variadic,allocator_api,coverage_attribute" }
 command = "cargo"
 args = ["llvm-cov", "--no-report"]
 

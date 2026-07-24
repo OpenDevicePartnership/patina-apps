@@ -4,7 +4,7 @@ resolver = "2"
 members = ["services_benchmark_test"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 license = "Apache-2.0"
 rust-version = "1.85"
@@ -14,13 +14,13 @@ repository = "https://github.com/OpenDevicePartnership/patina-apps"
 [workspace.dependencies]
 mu_rust_helpers = { version = "3" }
 
-patina = { version = "15"}
+patina = { version = "22"}
 
 cfg-if = "1.0.4"
 log = { version = "^0.4", default-features = false, features = [
   "release_max_level_warn",
 ] }
-r-efi = { version = "5.3.0", default-features = false }
+r-efi = { version = "7.0.0", default-features = false }
 rolling-stats = "0.8.0"
 uuid = { version = "1.8", default-features = false }
 

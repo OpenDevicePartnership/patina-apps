@@ -16,9 +16,6 @@ cfg_if::cfg_if! {
         use services_benchmark_test::bench_start;
         use r_efi::efi;
         use services_benchmark_test::BOOT_SERVICES;
-        use log::LevelFilter;
-        use patina::boot_services::protocol_handler::HandleSearchType;
-        use patina::boot_services::BootServices;
 
         #[entry]
         fn main() -> Status {
@@ -30,8 +27,7 @@ cfg_if::cfg_if! {
                 let st = st_ptr.as_ptr();
                 // SAFETY: `uefi` crate ensures that the system table pointer is valid after initialization.
                 let system_table = unsafe { &*st };
-                // SAFETY: `uefi` crate ensures that the boot services pointer is valid after initialization.
-                let bs = unsafe { &*(system_table.boot_services as *const efi::BootServices) };
+                let bs = system_table.boot_services as *mut efi::BootServices;
                 BOOT_SERVICES.init(bs);
             }
 

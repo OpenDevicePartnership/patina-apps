@@ -28,7 +28,10 @@ pub(crate) fn bench_allocate_pages(_handle: efi::Handle, num_calls: usize) -> Re
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
 
-        BOOT_SERVICES.free_pages(pages, 1).map_err(|e| BenchError::BenchCleanup("Failed to free pages", e))?;
+        // SAFETY: `pages` was just allocated above using `allocate_pages` and is not used after this call.
+        unsafe {
+            BOOT_SERVICES.free_pages(pages, 1).map_err(|e| BenchError::BenchCleanup("Failed to free pages", e))?;
+        }
     }
     Ok(stats)
 }
@@ -45,7 +48,10 @@ pub(crate) fn bench_allocate_pool(_handle: efi::Handle, num_calls: usize) -> Res
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
 
-        BOOT_SERVICES.free_pool(pool).map_err(|e| BenchError::BenchCleanup("Failed to free pool", e))?;
+        // SAFETY: `pool` was just allocated above using `allocate_pool` and is not used after this call.
+        unsafe {
+            BOOT_SERVICES.free_pool(pool).map_err(|e| BenchError::BenchCleanup("Failed to free pool", e))?;
+        }
     }
     Ok(stats)
 }
@@ -60,7 +66,10 @@ pub(crate) fn bench_free_pages(_handle: efi::Handle, num_calls: usize) -> Result
             .map_err(|e| BenchError::BenchSetup("Failed to allocate pages", e))?;
 
         let start = Arch::cpu_count();
-        BOOT_SERVICES.free_pages(pages, 1).map_err(|e| BenchError::BenchTest("Failed to free pages", e))?;
+        // SAFETY: `pages` was just allocated above via `allocate_pages` and is not used after this call.
+        unsafe {
+            BOOT_SERVICES.free_pages(pages, 1).map_err(|e| BenchError::BenchTest("Failed to free pages", e))?;
+        }
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
     }
@@ -77,7 +86,10 @@ pub(crate) fn bench_free_pool(_handle: efi::Handle, num_calls: usize) -> Result<
             .map_err(|e| BenchError::BenchSetup("Failed to allocate pool", e))?;
 
         let start = Arch::cpu_count();
-        BOOT_SERVICES.free_pool(pool).map_err(|e| BenchError::BenchTest("Failed to free pool", e))?;
+        // SAFETY: `pool` was just allocated above via `allocate_pool` and is not used after this call.
+        unsafe {
+            BOOT_SERVICES.free_pool(pool).map_err(|e| BenchError::BenchTest("Failed to free pool", e))?;
+        }
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
     }

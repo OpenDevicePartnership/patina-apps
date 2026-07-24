@@ -5,6 +5,7 @@
 //! SPDX-License-Identifier: Apache-2.0
 //!
 
+use patina::BinaryGuid;
 use patina::uefi_protocol::ProtocolInterface;
 use r_efi::efi;
 
@@ -26,12 +27,12 @@ pub struct TestProtocol1 {}
 
 // SAFETY: This is a test protocol with no layout requirements.
 unsafe impl ProtocolInterface for TestProtocol1 {
-    const PROTOCOL_GUID: efi::Guid = TEST_GUID1;
+    const PROTOCOL_GUID: BinaryGuid = BinaryGuid(TEST_GUID1);
 }
 
 pub struct TestProtocol2 {}
 
 // SAFETY: This is a test protocol with no layout requirements.
 unsafe impl ProtocolInterface for TestProtocol2 {
-    const PROTOCOL_GUID: efi::Guid = TEST_GUID2;
+    const PROTOCOL_GUID: BinaryGuid = BinaryGuid(TEST_GUID2);
 }

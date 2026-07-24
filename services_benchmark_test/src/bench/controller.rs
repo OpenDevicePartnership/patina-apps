@@ -81,14 +81,17 @@ pub(crate) fn bench_connect_controller(_handle: efi::Handle, num_calls: usize) -
         // SAFETY: All handles and pointers are valid (constructed by benchmark).
         unsafe {
             BOOT_SERVICES
-                .connect_controller(controller_install.0, vec![driver_install.0], core::ptr::null_mut(), false)
+                .connect_controller(controller_install.0, vec![driver_install.0], None, false)
                 .map_err(|e| BenchError::BenchTest("Failed to connect controller", e))?;
         }
         let end = Arch::cpu_count();
         stats.update((end - start) as f64);
-        BOOT_SERVICES
-            .disconnect_controller(controller_install.0, None, None)
-            .map_err(|e| BenchError::BenchCleanup("Failed to disconnect controller", e))?;
+        // SAFETY: All driver bindings managing the controller remain valid for the duration of this call.
+        unsafe {
+            BOOT_SERVICES
+                .disconnect_controller(controller_install.0, None, None)
+                .map_err(|e| BenchError::BenchCleanup("Failed to disconnect controller", e))?;
+        }
     }
 
     // Uninstall protocols to prevent side effects.

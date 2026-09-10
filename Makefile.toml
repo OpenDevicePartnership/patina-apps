@@ -21,6 +21,12 @@ TARGET_DIR = "target"
 EFI_DIR = "${TARGET_DIR}/${UEFI_TARGET}/${BUILD_MODE}"
 OUTPUT_DIR = "${TARGET_DIR}/efi"
 
+# Selects the nextest `ci` profile (defined in .config/nextest.toml) automatically when the `CI`
+# variable is set (e.g. GitHub Actions sets this for every job).
+# `NEXTEST_PROFILE` is read natively by `cargo nextest run` and by `cargo llvm-cov ... nextest`.
+# Note: Passing `--profile`/`-P` explicitly on the command line takes precedence over this env var.
+NEXTEST_PROFILE = { value = "ci", condition = { env_set = ["CI"] } }
+
 [tasks.default]
 alias = "build-efi"
 
@@ -148,7 +154,7 @@ clear = true
 # Note: RUSTFLAGS replaces build.rustflags.
 env = { RUSTFLAGS = "-Z allow-features=c_variadic,allocator_api,coverage_attribute" }
 command = "cargo"
-args = ["llvm-cov", "--no-report"]
+args = ["llvm-cov", "--no-report", "nextest"]
 
 # Clippy linting
 [tasks.clippy]

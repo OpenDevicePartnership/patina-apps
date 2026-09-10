@@ -167,3 +167,11 @@ pub unsafe fn print_to_console(message: &str) {
 mod bench;
 mod error;
 mod measure;
+
+// This is a placeholder test to allow test commands to run without
+// error given there are no other unit tests in this crate right now.
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn placeholder() {}
+}

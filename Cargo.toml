@@ -12,14 +12,11 @@ description = "Patina helper applications"
 repository = "https://github.com/OpenDevicePartnership/patina-apps"
 
 [workspace.dependencies]
-mu_rust_helpers = { version = "3" }
-
-patina = { version = "23"}
-
 cfg-if = "1.0.4"
 log = { version = "^0.4", default-features = false, features = [
   "release_max_level_warn",
 ] }
+patina = { version = "23"}
 r-efi = { version = "7.1", default-features = false }
 rolling-stats = "0.8.0"
 uuid = { version = "1.8", default-features = false }

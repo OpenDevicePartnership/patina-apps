@@ -5,7 +5,7 @@
 //! SPDX-License-Identifier: Apache-2.0
 //!
 
-use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};
+use patina::arch;
 use patina::uefi::boot_services::{BootServices as _, tpl::Tpl};
 use r_efi::efi::{self};
 use rolling_stats::Stats;
@@ -18,10 +18,10 @@ const TPL_HIGH_LEVEL: Tpl = Tpl(31);
 pub(crate) fn bench_raise_tpl(_handle: efi::Handle, num_calls: usize) -> Result<Stats<f64>, BenchError> {
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
-        let start = Arch::cpu_count();
+        let start = arch::get_timer_value();
         // Use TPL_HIGH_LEVEL to test impact of interrupts.
         let old_tpl = BOOT_SERVICES.raise_tpl(TPL_HIGH_LEVEL);
-        let end = Arch::cpu_count();
+        let end = arch::get_timer_value();
         stats.update((end - start) as f64);
 
         BOOT_SERVICES.restore_tpl(old_tpl);
@@ -38,9 +38,9 @@ pub(crate) fn bench_restore_tpl(_handle: efi::Handle, num_calls: usize) -> Resul
         // Rotate between different TPL levels to test all scenarios.
         let old_tpl = BOOT_SERVICES.raise_tpl(tpl_options[i % tpl_options.len()]);
 
-        let start = Arch::cpu_count();
+        let start = arch::get_timer_value();
         BOOT_SERVICES.restore_tpl(old_tpl);
-        let end = Arch::cpu_count();
+        let end = arch::get_timer_value();
         stats.update((end - start) as f64);
     }
 

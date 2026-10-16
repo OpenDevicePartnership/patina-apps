@@ -7,7 +7,7 @@
 
 use crate::alloc::{boxed::Box, vec};
 
-use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};
+use patina::arch;
 use patina::uefi::boot_services::BootServices;
 use r_efi::efi;
 use rolling_stats::Stats;
@@ -77,14 +77,14 @@ pub(crate) fn bench_connect_controller(_handle: efi::Handle, num_calls: usize) -
 
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
-        let start = Arch::cpu_count();
+        let start = arch::get_timer_value();
         // SAFETY: All handles and pointers are valid (constructed by benchmark).
         unsafe {
             BOOT_SERVICES
                 .connect_controller(controller_install.0, vec![driver_install.0], None, false)
                 .map_err(|e| BenchError::BenchTest("Failed to connect controller", e))?;
         }
-        let end = Arch::cpu_count();
+        let end = arch::get_timer_value();
         stats.update((end - start) as f64);
         // SAFETY: All driver bindings managing the controller remain valid for the duration of this call.
         unsafe {

@@ -92,7 +92,6 @@ exceptions = [
     # list
     #{ allow = ["Zlib"], crate = "adler32" },
     { allow = ["Unicode-3.0"], crate = "unicode-ident" },
-    { allow = ["MPL-2.0"], crate = "colored" },
     { allow = ["MPL-2.0"], crate = "ucs2" }
 ]
 
@@ -172,8 +171,7 @@ skip = [
     #"ansi_term@0.11.0",
     #{ crate = "ansi_term@0.11.0", reason = "you can specify a reason why it can't be updated/removed" },
 
-    { crate = "bitflags", reason = "Need https://github.com/gz/rust-x86/pull/150 to be merged into rust-x86." },
-    { crate = "windows-sys", reason = "https://crates.io/crates/colored latest (v3.0.0) uses 0.59. https://crates.io/crates/anstyle-query latest (v1.1.5) uses 0.61." }
+    { crate = "bitflags", reason = "Need https://github.com/gz/rust-x86/pull/150 to be merged into rust-x86." }
 ]
 # Similarly to `skip` allows you to skip certain crates during duplicate
 # detection. Unlike skip, it also includes the entire tree of transitive

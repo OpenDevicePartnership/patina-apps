@@ -22,15 +22,12 @@ name = "services_benchmark_test"
 path = "src/main.rs"
 
 [dependencies]
-mu_rust_helpers = { workspace = true }
-
 cfg-if = { workspace = true }
 log = { workspace = true }
+patina = { workspace = true }
 r-efi = { workspace = true }
 rolling-stats =  { workspace = true }
 uuid =  { workspace = true }
-
-patina = { workspace = true }
 
 [target.'cfg(target_os = "uefi")'.dependencies]
 uefi = { version = "0.36.0", features = ["alloc", "logger", "global_allocator"] }

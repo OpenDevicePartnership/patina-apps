@@ -5,7 +5,7 @@
 //! SPDX-License-Identifier: Apache-2.0
 //!
 
-use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};
+use patina::arch;
 use patina::uefi::boot_services::BootServices;
 use r_efi::efi;
 use rolling_stats::Stats;
@@ -26,12 +26,12 @@ pub(crate) fn bench_start_image_and_exit(
             .load_image(false, parent_handle, None, Some(image_bytes))
             .map_err(|e| BenchError::BenchSetup("Failed to load image", e))?;
 
-        let start = Arch::cpu_count();
+        let start = arch::get_timer_value();
         // This also includes `exit` as the image exits immediately.
         BOOT_SERVICES
             .start_image(loaded_image_handle)
             .map_err(|e| BenchError::BenchTest("Failed to start image", e.0))?;
-        let end = Arch::cpu_count();
+        let end = arch::get_timer_value();
         stats.update((end - start) as f64);
     }
     Ok(stats)
@@ -42,11 +42,11 @@ pub(crate) fn bench_load_image(parent_handle: efi::Handle, num_calls: usize) -> 
     let mut stats: Stats<f64> = Stats::new();
     for _ in 0..num_calls {
         let image_bytes = include_bytes!("../../resources/NoopImage.efi");
-        let start = Arch::cpu_count();
+        let start = arch::get_timer_value();
         let _loaded_image_handle = BOOT_SERVICES
             .load_image(false, parent_handle, None, Some(image_bytes))
             .map_err(|e| BenchError::BenchTest("Failed to load image", e))?;
-        let end = Arch::cpu_count();
+        let end = arch::get_timer_value();
         stats.update((end - start) as f64);
 
         // Unload the image to avoid resource leaks.

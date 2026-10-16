@@ -38,7 +38,7 @@ use alloc::{
 };
 
 use core::fmt::Write;
-use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};
+use patina::arch;
 use rolling_stats::Stats;
 
 use patina::uefi::boot_services::StandardBootServices;
@@ -49,6 +49,9 @@ use crate::{error::BenchError, measure::BENCH_FNS};
 pub fn bench_start(handle: efi::Handle) -> Result<(), BenchError> {
     log::info!("Starting Services Benchmark Test...");
 
+    let timer_frequency = arch::get_timer_frequency()
+        .ok_or(BenchError::BenchSetup("Timer frequency is unavailable", efi::Status::UNSUPPORTED))?
+        .get();
     let mut output_buf = String::new();
 
     write_headers(&mut output_buf)?;
@@ -62,7 +65,7 @@ pub fn bench_start(handle: efi::Handle) -> Result<(), BenchError> {
         match cycles_res {
             Ok(cycles_stats) => {
                 // Calculate total time in milliseconds. Formula: ms = cycles / (cycles / s) * 1000.
-                let total_time_ms = (cycles_stats.count as f64) / (Arch::perf_frequency() as f64) * 1000.0;
+                let total_time_ms = (cycles_stats.count as f64) / (timer_frequency as f64) * 1000.0;
                 write_result_row(&mut output_buf, bench_name, cycles_stats, total_time_ms, num_calls)?;
             }
             Err(e) => {

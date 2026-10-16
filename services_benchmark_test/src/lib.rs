@@ -41,7 +41,7 @@ use core::fmt::Write;
 use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};
 use rolling_stats::Stats;
 
-use patina::boot_services::StandardBootServices;
+use patina::uefi::boot_services::StandardBootServices;
 use r_efi::efi;
 
 use crate::{error::BenchError, measure::BENCH_FNS};

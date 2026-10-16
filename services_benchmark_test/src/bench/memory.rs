@@ -7,9 +7,11 @@
 
 use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};
 use patina::{
-    base::UEFI_PAGE_SIZE,
-    boot_services::{self, BootServices as _},
-    efi_types::EfiMemoryType,
+    UEFI_PAGE_SIZE,
+    uefi::{
+        boot_services::{self, BootServices as _},
+        memory::EfiMemoryType,
+    },
 };
 use r_efi::efi;
 use rolling_stats::Stats;

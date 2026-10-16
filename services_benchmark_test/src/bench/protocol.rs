@@ -8,7 +8,10 @@
 use core::ffi::c_void;
 
 use mu_rust_helpers::perf_timer::{Arch, ArchFunctionality as _};
-use patina::boot_services::{BootServices, event::EventType, tpl::Tpl};
+use patina::uefi::{
+    boot_services::{BootServices, tpl::Tpl},
+    event::EventType,
+};
 use r_efi::efi;
 use rolling_stats::Stats;
 

@@ -6,7 +6,7 @@
 //!
 
 use patina::BinaryGuid;
-use patina::uefi_protocol::ProtocolInterface;
+use patina::protocol::ProtocolInterface;
 use r_efi::efi;
 
 pub(crate) mod controller;

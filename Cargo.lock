@@ -399,7 +399,7 @@ dependencies = [
 
 [[package]]
 name = "services_benchmark_test"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "cfg-if",
  "log",
